@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Text;
 using NewLife.Log;
-using NewLife.Net;
 using NewLife.Web;
 
 namespace NewLife.IP;

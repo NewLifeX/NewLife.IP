@@ -14,7 +14,7 @@ public class IpTests
     static IpTests()
     {
         //Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-        IpHelper.Register();
+        IpResolver.Register();
     }
 
     [Fact]
