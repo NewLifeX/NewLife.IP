@@ -15,7 +15,7 @@ class Zip : IDisposable
     //IndexInfo Search_End;
 
     /// <summary>数据流</summary>
-    public Stream? Stream { get; set; }
+    public Stream Stream { get; set; }
     #endregion
 
     #region 构造

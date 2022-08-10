@@ -10,7 +10,7 @@ namespace NewLife.IP;
 public static class Ip
 {
     private static readonly Object lockHelper = new();
-    private static Zip? zip;
+    private static Zip zip;
 
     /// <summary>数据文件</summary>
     public static String DbFile { get; set; } = "";
@@ -152,9 +152,4 @@ public static class Ip
         //return BitConverter.ToUInt32(buf, 0);
         return val;
     }
-}
-
-class MyIpProvider : IIPResolver
-{
-    public String GetAddress(IPAddress addr) => Ip.GetAddress(addr);
 }
