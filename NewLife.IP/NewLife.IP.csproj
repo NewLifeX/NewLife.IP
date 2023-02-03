@@ -4,7 +4,7 @@
     <AssemblyTitle>IP地址库</AssemblyTitle>
     <Description>IP地址解析为物理地址</Description>
     <Company>新生命开发团队</Company>
-    <Copyright>©2002-2022 新生命开发团队</Copyright>
+    <Copyright>©2002-2023 新生命开发团队</Copyright>
     <VersionPrefix>2.0</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
@@ -47,7 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="10.1.2022.1201" />
+    <PackageReference Include="NewLife.Core" Version="10.1.2023.203" />
   </ItemGroup>
 
   <ItemGroup>
