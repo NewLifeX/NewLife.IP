@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using NewLife.Log;
 
 namespace NewLife.IP;
 
@@ -23,7 +24,12 @@ class Zip : IDisposable
     ~Zip() { OnDispose(false); }
 
     /// <summary>销毁</summary>
-    public void Dispose() => OnDispose(true);
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+
+        OnDispose(true);
+    }
 
     void OnDispose(Boolean disposing)
     {
@@ -57,6 +63,8 @@ class Zip : IDisposable
         Index_Set = GetUInt32();
         Index_End = GetUInt32();
         Index_Count = (Index_End - Index_Set) / 7u + 1u;
+
+        XTrace.WriteLine("IP记录数：{0:n0}", Index_Count);
 
         return this;
     }

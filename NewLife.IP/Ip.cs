@@ -25,12 +25,16 @@ public static class Ip
         if (File.Exists(ip)) DbFile = ip;
 
         // 如果本地没有IP数据库，则从网络下载
-        if (DbFile.IsNullOrWhiteSpace())
+        var fi = DbFile.IsNullOrWhiteSpace() ? null : DbFile.AsFile();
+        if (fi == null || !fi.Exists || fi.LastWriteTime < new DateTime(2023, 6, 27))
         {
             var task = Task.Factory.StartNew(() =>
             {
                 var url = set.PluginServer;
-                XTrace.WriteLine("没有找到IP数据库{0}，准备联网获取 {1}", ip, url);
+                if (fi == null || !fi.Exists)
+                    XTrace.WriteLine("没有找到IP数据库{0}，准备联网获取 {1}", ip, url);
+                else
+                    XTrace.WriteLine("IP数据库{0}已过期，准备联网更新 {1}", ip, url);
 
                 // 无法下载ip地址库时，不要抛出异常影响业务层
                 try
@@ -39,11 +43,15 @@ public static class Ip
                     {
                         Log = XTrace.Log
                     };
-                    var file = client.DownloadLink(url, "ip.gz", dir.GetBasePath());
+                    var file = client.DownloadLink(url, "ip.gz", Path.GetTempPath());
 
                     if (File.Exists(file))
                     {
-                        DbFile = file;
+                        if (File.Exists(ip)) File.Delete(ip);
+                        ip.EnsureDirectory(true);
+                        File.Move(file, ip);
+
+                        DbFile = ip;
                         zip = null;
                         // 让它重新初始化
                         _inited = null;
