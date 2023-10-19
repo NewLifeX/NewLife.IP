@@ -26,7 +26,7 @@ public static class Ip
 
         // 如果本地没有IP数据库，则从网络下载
         var fi = DbFile.IsNullOrWhiteSpace() ? null : DbFile.AsFile();
-        if (fi == null || !fi.Exists || fi.LastWriteTime < new DateTime(2023, 6, 27))
+        if (fi == null || !fi.Exists || fi.LastWriteTime < new DateTime(2023, 10, 18))
         {
             var task = Task.Factory.StartNew(() =>
             {
