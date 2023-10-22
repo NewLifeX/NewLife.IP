@@ -18,7 +18,7 @@ public class IpTests
     {
         var addr = "39.144.10.35".IPToAddress();
         var ss = addr.Split(' ');
-        Assert.Equal("北京市", ss[0]);
+        Assert.Equal("广东省", ss[0]);
 
         addr = "116.234.91.199".IPToAddress();
         ss = addr.Split(' ');
@@ -34,7 +34,7 @@ public class IpTests
 
         addr = "113.220.60.29".IPToAddress();
         ss = addr.Split(' ');
-        Assert.Equal("湖南省张家界市", ss[0]);
+        Assert.Equal("湖南省邵阳市", ss[0]);
 
         addr = "124.239.170.77".IPToAddress();
         ss = addr.Split(' ');
@@ -43,6 +43,18 @@ public class IpTests
         addr = "112.74.79.65".IPToAddress();
         ss = addr.Split(' ');
         Assert.Equal("广东省深圳市", ss[0]);
+
+        addr = "218.87.90.59".IPToAddress();
+        ss = addr.Split(' ');
+        Assert.Equal("江西省九江市永修县", ss[0]);
+
+        addr = "39.144.8.87".IPToAddress();
+        ss = addr.Split(' ');
+        Assert.Equal("广东省深圳市", ss[0]);
+
+        addr = "111.55.141.170".IPToAddress();
+        ss = addr.Split(' ');
+        Assert.Equal("山西省", ss[0]);
     }
 
     [Fact]
