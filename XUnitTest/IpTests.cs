@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.IO;
+using System.Text;
+using System.Threading;
 using NewLife;
 using NewLife.IP;
 using Xunit;
@@ -11,6 +13,12 @@ public class IpTests
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         IpResolver.Register();
+
+        var addr = "39.144.10.35".IPToAddress();
+
+        //#if DEBUG
+        if (!"data/ip.gz".AsFile().Exists) Thread.Sleep(9000);
+        //#endif
     }
 
     [Fact]

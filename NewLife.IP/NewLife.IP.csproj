@@ -27,7 +27,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.IP</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>更新IP地址库（2023-12-09）</PackageReleaseNotes>
+    <PackageReleaseNotes>更新IP地址库（2024-03-09）</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -47,7 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="10.6.2024.101" />
+    <PackageReference Include="NewLife.Core" Version="10.9.2024.402" />
   </ItemGroup>
 
   <ItemGroup>
