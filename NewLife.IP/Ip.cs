@@ -9,7 +9,7 @@ namespace NewLife.IP;
 public class Ip
 {
     private readonly Object lockHelper = new();
-    private Zip _zip;
+    private IpDatabase _zip;
 
     /// <summary>数据文件</summary>
     public String DbFile { get; set; } = "";
@@ -46,7 +46,7 @@ public class Ip
                 task.Wait(5_000);
             }
 
-            var zip = new Zip();
+            var zip = new IpDatabase();
             ip = DbFile;
             if (!File.Exists(ip))
             {

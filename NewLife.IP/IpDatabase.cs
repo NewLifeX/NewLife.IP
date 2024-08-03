@@ -4,23 +4,26 @@ using NewLife.Log;
 
 namespace NewLife.IP;
 
-class Zip : IDisposable
+/// <summary>IP数据库</summary>
+public class IpDatabase : IDisposable
 {
     #region 属性
-    UInt32 _Start;
-    UInt32 _End;
-    UInt32 _Count;
+    /// <summary>起始位置</summary>
+    public UInt32 Start { get; private set; }
+
+    /// <summary>结束位置</summary>
+    public UInt32 End { get; private set; }
+
+    /// <summary>记录数</summary>
+    public UInt32 Count { get; private set; }
 
     MemoryMappedFile _mmf;
     String _tempFile;
-
-    /// <summary>数据流</summary>
-    public Stream Stream { get; set; }
     #endregion
 
     #region 构造
     /// <summary>析构</summary>
-    ~Zip() { OnDispose(false); }
+    ~IpDatabase() { OnDispose(false); }
 
     /// <summary>销毁</summary>
     public void Dispose()
@@ -34,7 +37,6 @@ class Zip : IDisposable
     {
         if (disposing)
         {
-            Stream?.Dispose();
             _mmf.TryDispose();
 
             if (!_tempFile.IsNullOrEmpty() && File.Exists(_tempFile)) File.Delete(_tempFile);
@@ -45,7 +47,10 @@ class Zip : IDisposable
     #endregion
 
     #region 数据源
-    public Zip SetFile(String file)
+    /// <summary>设置文件</summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
+    public IpDatabase SetFile(String file)
     {
         // 仅支持Gzip压缩，可用7z软件先压缩为gz格式
         if (file.EndsWithIgnoreCase(".gz"))
@@ -64,24 +69,26 @@ class Zip : IDisposable
 
         // 启用MMF
         _mmf = MemoryMappedFile.CreateFromFile(file, FileMode.Open, null, 0, MemoryMappedFileAccess.ReadWrite);
-        Stream = _mmf.CreateViewStream();
 
         using var view = _mmf.CreateViewAccessor();
-        _Start = view.ReadUInt32(0);
-        _End = view.ReadUInt32(4);
-        _Count = (_End - _Start) / 7u + 1u;
+        Start = view.ReadUInt32(0);
+        End = view.ReadUInt32(4);
+        Count = (End - Start) / 7u + 1u;
 
-        XTrace.WriteLine("IP记录数：{0:n0}", _Count);
+        XTrace.WriteLine("IP记录数：{0:n0}", Count);
 
         return this;
     }
     #endregion
 
     #region 方法
+    /// <summary>获取IP的物理地址</summary>
+    /// <param name="ip"></param>
+    /// <returns></returns>
     public String GetAddress(UInt32 ip)
     {
         var idxSet = 0u;
-        var idxEnd = _Count - 1u;
+        var idxEnd = Count - 1u;
         using var view = _mmf.CreateViewAccessor();
 
         // 二分法搜索
@@ -145,19 +152,6 @@ class Zip : IDisposable
         return (addr + " " + area).Trim();
     }
 
-    UInt32 GetOffset()
-    {
-        var ms = Stream;
-        if (ms == null) return 0;
-
-        return BitConverter.ToUInt32(new Byte[] {
-            (Byte)ms.ReadByte(),
-            (Byte)ms.ReadByte(),
-            (Byte)ms.ReadByte(),
-            0 },
-            0);
-    }
-
     String ReadArea(UnmanagedMemoryAccessor view, UInt32 p)
     {
         var tag = view.ReadByte(p);
@@ -185,11 +179,9 @@ class Zip : IDisposable
         return str;
     }
 
-    Byte GetTag() => (Byte)(Stream?.ReadByte() ?? 0);
-
     IndexInfo ReadIndexInfo(UnmanagedMemoryAccessor view, UInt32 index)
     {
-        var p = _Start + 7u * index;
+        var p = Start + 7u * index;
         var inf = new IndexInfo
         {
             Start = view.ReadUInt32(p),
@@ -198,16 +190,6 @@ class Zip : IDisposable
         inf.End = view.ReadUInt32(inf.Offset);
 
         return inf;
-    }
-
-    UInt32 GetUInt32()
-    {
-        var ms = Stream;
-        if (ms == null) return 0;
-
-        var array = new Byte[4];
-        ms.Read(array, 0, 4);
-        return BitConverter.ToUInt32(array, 0);
     }
     #endregion
 
