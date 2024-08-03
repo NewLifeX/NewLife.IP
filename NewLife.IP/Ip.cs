@@ -8,7 +8,6 @@ namespace NewLife.IP;
 /// <summary>IP搜索</summary>
 public class Ip
 {
-    private readonly Object lockHelper = new();
     private IpDatabase _zip;
 
     /// <summary>数据文件</summary>
@@ -131,10 +130,7 @@ public class Ip
         if (!Init() || _zip == null) return "";
 
         var ip2 = ip.Trim().ToUInt32IP();
-        lock (lockHelper)
-        {
-            return _zip.GetAddress(ip2) + "";
-        }
+        return _zip.GetAddress(ip2) + "";
     }
 
     /// <summary>获取IP地址</summary>
@@ -147,9 +143,6 @@ public class Ip
         if (!Init() || _zip == null) return "";
 
         var ip2 = addr.ToUInt32();
-        lock (lockHelper)
-        {
-            return _zip.GetAddress(ip2) + "";
-        }
+        return _zip.GetAddress(ip2) + "";
     }
 }

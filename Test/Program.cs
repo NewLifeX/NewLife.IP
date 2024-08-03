@@ -46,7 +46,7 @@ class Program
         {
             var (set, addr) = db.GetIndex(idx);
 
-            if (idx % 100 == 0)
+            if (idx % 1000 == 0)
             {
                 XTrace.WriteLine("{0}\t{1} - {2}\t{3}", idx, set.Start.ToStringIP(), set.End.ToStringIP(), addr);
             }
