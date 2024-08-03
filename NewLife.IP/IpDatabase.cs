@@ -76,7 +76,7 @@ public class IpDatabase : IDisposable
         End = view.ReadUInt32(4);
         Count = (End - Start) / 7u + 1u;
 
-        XTrace.WriteLine("IP记录数：{0:n0} 起始：{1} 结束：{2}", Count, Start.ToAddress(), End.ToAddress());
+        XTrace.WriteLine("IP记录数：{0:n0}", Count);
 
         return this;
     }
@@ -86,14 +86,15 @@ public class IpDatabase : IDisposable
     /// <summary>获取IP的物理地址</summary>
     /// <param name="ip"></param>
     /// <returns></returns>
-    public String GetAddress(UInt32 ip)
+    public (String addr, String area) GetAddress(UInt32 ip)
     {
         var idxSet = 0u;
         var idxEnd = Count - 1u;
+        // 频繁销毁视图会导致性能下降
         //using var view = _mmf.CreateViewAccessor();
         var view = _view ??= _mmf.CreateViewAccessor();
 
-        // 二分法搜索
+        // 二分法搜索，找到IP所在区间
         IndexInfo set;
         while (true)
         {
@@ -117,16 +118,16 @@ public class IpDatabase : IDisposable
     /// <summary>获取指定索引处的信息</summary>
     /// <param name="idx"></param>
     /// <returns></returns>
-    public (IndexInfo, String) GetIndex(UInt32 idx)
+    public (IndexInfo, String addr, String area) GetIndex(UInt32 idx)
     {
         var view = _view ??= _mmf.CreateViewAccessor();
 
-        var set = ReadIndexInfo(view, idx);
-        var addr = ReadAddressInfo(view, set.Offset);
-        return (set, addr);
+        var info = ReadIndexInfo(view, idx);
+        var (addr, area) = ReadAddressInfo(view, info.Offset);
+        return (info, addr, area);
     }
 
-    String ReadAddressInfo(UnmanagedMemoryAccessor view, UInt32 offset)
+    (String addr, String area) ReadAddressInfo(UnmanagedMemoryAccessor view, UInt32 offset)
     {
         String addr;
         String area;
@@ -163,7 +164,7 @@ public class IpDatabase : IDisposable
                 area = ReadArea(view, p);
             }
         }
-        return (addr + " " + area).Trim();
+        return (addr, area);
     }
 
     String ReadArea(UnmanagedMemoryAccessor view, UInt32 p)
@@ -183,6 +184,8 @@ public class IpDatabase : IDisposable
 
         var k = 0u;
         while (k < count && buf[k] != 0) k++;
+        if (k == 0) return String.Empty;
+
         p += k;
 
         _encoding ??= Encoding.GetEncoding("GB2312");

@@ -129,20 +129,20 @@ public class Ip
 
         if (!Init() || _zip == null) return "";
 
-        var ip2 = ip.Trim().ToUInt32IP();
-        return _zip.GetAddress(ip2) + "";
+        var (addr, area) = _zip.GetAddress(ip.Trim().ToUInt32IP());
+        return addr + " " + area;
     }
 
     /// <summary>获取IP地址</summary>
     /// <param name="addr"></param>
     /// <returns></returns>
-    public String GetAddress(IPAddress addr)
+    public String GetAddress(IPAddress ip)
     {
-        if (addr == null) return "";
+        if (ip == null) return "";
 
         if (!Init() || _zip == null) return "";
 
-        var ip2 = addr.ToUInt32();
-        return _zip.GetAddress(ip2) + "";
+        var (addr, area) = _zip.GetAddress(ip.ToUInt32());
+        return addr + " " + area;
     }
 }

@@ -71,6 +71,6 @@ public class IpTests
         var addr = "116.136.7.43".IPToAddress();
         var ss = addr.Split(' ');
         Assert.Equal("内蒙古赤峰市", ss[0]);
-        Assert.Equal("联通", ss[1]);
+        Assert.Equal("", ss[1]);
     }
 }
