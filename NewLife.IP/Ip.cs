@@ -29,39 +29,35 @@ public class Ip
         {
             if (_inited != null) return _inited.Value;
 
-            var set = Setting.Current;
-            var ip = set.DataPath.CombinePath("ip.gz").GetBasePath();
-            if (File.Exists(ip)) DbFile = ip;
+            var ip = DbFile;
+            if (ip.IsNullOrEmpty())
+            {
+                var set = Setting.Current;
+                ip = set.DataPath.CombinePath("ip.gz").GetBasePath();
+                if (File.Exists(ip)) DbFile = ip;
+            }
 
             // 如果本地没有IP数据库，则从网络下载
-            var fi = DbFile.IsNullOrWhiteSpace() ? null : DbFile.AsFile();
+            var fi = ip.IsNullOrWhiteSpace() ? null : ip.AsFile();
             if (fi == null || !fi.Exists || fi.Length < 3 * 1024 * 1024 || fi.LastWriteTime < new DateTime(2024, 03, 09))
             {
-                var task = Task.Run(() =>
-                {
-                    // 下载成功时，让它重新初始化
-                    if (Download(ip, set.PluginServer))
-                    {
-                        _inited = null;
-                        _zip = null;
-                    }
-                });
+                var task = Task.Run(() => Download(ip));
                 // 静态构造函数里不能等待，否则异步函数也无法执行
                 task.Wait(5_000);
             }
 
             var zip = new Zip();
-
-            if (!File.Exists(DbFile))
+            ip = DbFile;
+            if (!File.Exists(ip))
             {
-                XTrace.WriteLine("无法找到IP数据库{0}", DbFile);
+                XTrace.WriteLine("无法找到IP数据库{0}", ip);
                 return false;
             }
-            XTrace.WriteLine("IP数据库：{0}", DbFile);
+            XTrace.WriteLine("IP数据库：{0}", ip);
 
             try
             {
-                zip.SetFile(DbFile);
+                zip.SetFile(ip);
 
                 _zip = zip;
             }
@@ -78,8 +74,11 @@ public class Ip
         return true;
     }
 
-    private Boolean Download(String ip, String url)
+    private Boolean Download(String ip)
     {
+        var set = Setting.Current;
+        var url = set.PluginServer;
+
         var fi = ip.AsFile();
         if (fi == null || !fi.Exists)
             XTrace.WriteLine("没有找到IP数据库{0}，准备联网获取 {1}", ip, url);
@@ -102,6 +101,9 @@ public class Ip
                 File.Move(file, ip);
 
                 DbFile = ip;
+
+                // 下载成功时，让它重新初始化
+                _inited = null;
 
                 return true;
             }
