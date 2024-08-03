@@ -7,9 +7,9 @@ namespace NewLife.IP;
 class Zip : IDisposable
 {
     #region 属性
-    UInt32 Index_Set;
-    UInt32 Index_End;
-    UInt32 Index_Count;
+    UInt32 _Start;
+    UInt32 _End;
+    UInt32 _Count;
 
     MemoryMappedFile _mmf;
     String _tempFile;
@@ -66,11 +66,12 @@ class Zip : IDisposable
         _mmf = MemoryMappedFile.CreateFromFile(file, FileMode.Open, null, 0, MemoryMappedFileAccess.ReadWrite);
         Stream = _mmf.CreateViewStream();
 
-        Index_Set = GetUInt32();
-        Index_End = GetUInt32();
-        Index_Count = (Index_End - Index_Set) / 7u + 1u;
+        using var view = _mmf.CreateViewAccessor();
+        _Start = view.ReadUInt32(0);
+        _End = view.ReadUInt32(4);
+        _Count = (_End - _Start) / 7u + 1u;
 
-        XTrace.WriteLine("IP记录数：{0:n0}", Index_Count);
+        XTrace.WriteLine("IP记录数：{0:n0}", _Count);
 
         return this;
     }
@@ -79,72 +80,66 @@ class Zip : IDisposable
     #region 方法
     public String GetAddress(UInt32 ip)
     {
-        //if (Stream == null) return "";
-
         var idxSet = 0u;
-        var idxEnd = Index_Count - 1u;
+        var idxEnd = _Count - 1u;
+        using var view = _mmf.CreateViewAccessor();
 
+        // 二分法搜索
         IndexInfo set;
         while (true)
         {
-            set = IndexInfoAtPos(idxSet);
-            var end = IndexInfoAtPos(idxEnd);
-            if (ip >= set.IpSet && ip <= set.IpEnd) break;
+            set = ReadIndexInfo(view, idxSet);
+            if (ip >= set.Start && ip <= set.End) break;
 
-            if (ip >= end.IpSet && ip <= end.IpEnd) return ReadAddressInfoAtOffset(end.Offset);
+            var end = ReadIndexInfo(view, idxEnd);
+            if (ip >= end.Start && ip <= end.End) return ReadAddressInfo(view, end.Offset);
 
-            var mid = IndexInfoAtPos((idxEnd + idxSet) / 2u);
-            if (ip >= mid.IpSet && ip <= mid.IpEnd) return ReadAddressInfoAtOffset(mid.Offset);
+            var mid = ReadIndexInfo(view, (idxEnd + idxSet) / 2u);
+            if (ip >= mid.Start && ip <= mid.End) return ReadAddressInfo(view, mid.Offset);
 
-            if (ip < mid.IpSet)
+            if (ip < mid.Start)
                 idxEnd = (idxEnd + idxSet) / 2u;
             else
                 idxSet = (idxEnd + idxSet) / 2u;
         }
-        return ReadAddressInfoAtOffset(set.Offset);
+        return ReadAddressInfo(view, set.Offset);
     }
 
-    String ReadAddressInfoAtOffset(UInt32 Offset)
+    String ReadAddressInfo(UnmanagedMemoryAccessor view, UInt32 offset)
     {
-        var ms = Stream;
-        if (ms == null) return String.Empty;
-
-        ms.Position = Offset + 4;
-        var tag = GetTag();
         String addr;
         String area;
+
+        var p = offset + 4;
+        var tag = view.ReadByte(p);
         if (tag == 1)
         {
-            ms.Position = GetOffset();
-            tag = GetTag();
+            p = view.ReadUInt32(p + 1) & 0x00FF_FFFF;
+            tag = view.ReadByte(p);
             if (tag == 2)
             {
-                var offset = GetOffset();
-                area = ReadArea();
-                ms.Position = offset;
-                addr = ReadString();
+                offset = view.ReadUInt32(p + 1) & 0x00FF_FFFF;
+                area = ReadArea(view, p + 4);
+                addr = ReadString(view, ref offset);
             }
             else
             {
-                ms.Position -= 1;
-                addr = ReadString();
-                area = ReadArea();
+                addr = ReadString(view, ref p);
+                area = ReadArea(view, p);
             }
         }
         else
         {
             if (tag == 2)
             {
-                var offset = GetOffset();
-                area = ReadArea();
-                ms.Position = offset;
-                addr = ReadString();
+                offset = view.ReadUInt32(p + 1) & 0x00FF_FFFF;
+                area = ReadArea(view, p + 4);
+                addr = ReadString(view, ref offset);
             }
             else
             {
-                ms.Position -= 1;
-                addr = ReadString();
-                area = ReadArea();
+                addr = ReadString(view, ref p);
+                area = ReadArea(view, p);
             }
         }
         return (addr + " " + area).Trim();
@@ -163,35 +158,28 @@ class Zip : IDisposable
             0);
     }
 
-    String ReadArea()
+    String ReadArea(UnmanagedMemoryAccessor view, UInt32 p)
     {
-        var ms = Stream;
-        if (ms == null) return String.Empty;
-
-        var tag = GetTag();
+        var tag = view.ReadByte(p);
         if (tag == 1 || tag == 2)
-            ms.Position = GetOffset();
-        else
-            ms.Position -= 1;
+            p = view.ReadUInt32(p + 1) & 0x00FF_FFFF;
 
-        return ReadString();
+        return ReadString(view, ref p);
     }
 
-    String ReadString()
+    private static Encoding _encoding;
+    String ReadString(UnmanagedMemoryAccessor view, ref UInt32 p)
     {
-        var ms = Stream;
-        if (ms == null) return String.Empty;
-
-        var k = 0;
         var buf = new Byte[256];
-        buf[k] = (Byte)ms.ReadByte();
-        while (buf[k] != 0)
-        {
-            k += 1;
-            buf[k] = (Byte)ms.ReadByte();
-        }
+        var count = view.ReadArray(p, buf, 0, buf.Length);
 
-        var str = Encoding.GetEncoding("GB2312").GetString(buf).Trim().Trim('\0').Trim();
+        var k = 0u;
+        while (k < count && buf[k] != 0) k++;
+        p += k;
+
+        _encoding ??= Encoding.GetEncoding("GB2312");
+
+        var str = _encoding.GetString(buf, 0, (Int32)k).Trim().Trim('\0').Trim();
         if (str == "CZ88.NET") return String.Empty;
 
         return str;
@@ -199,17 +187,15 @@ class Zip : IDisposable
 
     Byte GetTag() => (Byte)(Stream?.ReadByte() ?? 0);
 
-    IndexInfo IndexInfoAtPos(UInt32 Index_Pos)
+    IndexInfo ReadIndexInfo(UnmanagedMemoryAccessor view, UInt32 index)
     {
-        var inf = new IndexInfo();
-        var ms = Stream;
-        if (ms == null) return inf;
-
-        ms.Position = Index_Set + 7u * Index_Pos;
-        inf.IpSet = GetUInt32();
-        inf.Offset = GetOffset();
-        ms.Position = inf.Offset;
-        inf.IpEnd = GetUInt32();
+        var p = _Start + 7u * index;
+        var inf = new IndexInfo
+        {
+            Start = view.ReadUInt32(p),
+            Offset = view.ReadUInt32(p + 4) & 0x00FF_FFFF
+        };
+        inf.End = view.ReadUInt32(inf.Offset);
 
         return inf;
     }
@@ -226,10 +212,10 @@ class Zip : IDisposable
     #endregion
 
     /// <summary>索引结构</summary>
-    class IndexInfo
+    struct IndexInfo
     {
-        public UInt32 IpSet;
-        public UInt32 IpEnd;
+        public UInt32 Start;
+        public UInt32 End;
         public UInt32 Offset;
     }
 }
