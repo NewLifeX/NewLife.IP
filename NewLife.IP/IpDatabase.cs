@@ -18,6 +18,7 @@ public class IpDatabase : IDisposable
     public UInt32 Count { get; private set; }
 
     MemoryMappedFile _mmf;
+    MemoryMappedViewAccessor _view;
     String _tempFile;
     #endregion
 
@@ -75,7 +76,7 @@ public class IpDatabase : IDisposable
         End = view.ReadUInt32(4);
         Count = (End - Start) / 7u + 1u;
 
-        XTrace.WriteLine("IP记录数：{0:n0}", Count);
+        XTrace.WriteLine("IP记录数：{0:n0} 起始：{1} 结束：{2}", Count, Start.ToAddress(), End.ToAddress());
 
         return this;
     }
@@ -89,7 +90,8 @@ public class IpDatabase : IDisposable
     {
         var idxSet = 0u;
         var idxEnd = Count - 1u;
-        using var view = _mmf.CreateViewAccessor();
+        //using var view = _mmf.CreateViewAccessor();
+        var view = _view ??= _mmf.CreateViewAccessor();
 
         // 二分法搜索
         IndexInfo set;
@@ -110,6 +112,18 @@ public class IpDatabase : IDisposable
                 idxSet = (idxEnd + idxSet) / 2u;
         }
         return ReadAddressInfo(view, set.Offset);
+    }
+
+    /// <summary>获取指定索引处的信息</summary>
+    /// <param name="idx"></param>
+    /// <returns></returns>
+    public (IndexInfo, String) GetIndex(UInt32 idx)
+    {
+        var view = _view ??= _mmf.CreateViewAccessor();
+
+        var set = ReadIndexInfo(view, idx);
+        var addr = ReadAddressInfo(view, set.Offset);
+        return (set, addr);
     }
 
     String ReadAddressInfo(UnmanagedMemoryAccessor view, UInt32 offset)
@@ -192,12 +206,4 @@ public class IpDatabase : IDisposable
         return inf;
     }
     #endregion
-
-    /// <summary>索引结构</summary>
-    struct IndexInfo
-    {
-        public UInt32 Start;
-        public UInt32 End;
-        public UInt32 Offset;
-    }
 }

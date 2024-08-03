@@ -14,6 +14,9 @@ public class Ip
     /// <summary>数据文件</summary>
     public String DbFile { get; set; } = "";
 
+    /// <summary>数据库实例</summary>
+    public IpDatabase Db => _zip;
+
     static Ip()
     {
 #if NETCOREAPP
@@ -22,7 +25,9 @@ public class Ip
     }
 
     private Boolean? _inited;
-    private Boolean Init()
+    /// <summary>初始化</summary>
+    /// <returns></returns>
+    public Boolean Init()
     {
         if (_inited != null) return _inited.Value;
         lock (typeof(Ip))
@@ -125,7 +130,7 @@ public class Ip
 
         if (!Init() || _zip == null) return "";
 
-        var ip2 = IPToUInt32(ip.Trim());
+        var ip2 = ip.Trim().ToUInt32IP();
         lock (lockHelper)
         {
             return _zip.GetAddress(ip2) + "";
@@ -141,32 +146,10 @@ public class Ip
 
         if (!Init() || _zip == null) return "";
 
-        var buf = addr.GetAddressBytes();
-        Array.Reverse(buf);
-        var ip2 = (UInt32)buf.ToInt();
+        var ip2 = addr.ToUInt32();
         lock (lockHelper)
         {
             return _zip.GetAddress(ip2) + "";
         }
-    }
-
-    static UInt32 IPToUInt32(String IpValue)
-    {
-        var ss = IpValue.Split('.');
-        //var buf = stackalloc Byte[4];
-        var val = 0u;
-        //var ptr = (Byte*)&val;
-        for (var i = 0; i < 4; i++)
-        {
-            if (i < ss.Length && UInt32.TryParse(ss[i], out var n))
-            {
-                //buf[3 - i] = (Byte)n;
-                // 感谢啊富弟（QQ125662872）指出错误，右边需要乘以8，这里为了避开乘法，采用位移实现
-                val |= n << ((3 - i) << 3);
-                //ptr[3 - i] = n;
-            }
-        }
-        //return BitConverter.ToUInt32(buf, 0);
-        return val;
     }
 }

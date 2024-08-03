@@ -15,7 +15,7 @@ class Program
 
         try
         {
-            Test1();
+            Test2();
         }
         catch (Exception ex)
         {
@@ -33,20 +33,22 @@ class Program
         var ip = "47.100.59.126";
         var addr = ip.IPToAddress();
         XTrace.WriteLine(addr);
+    }
 
-        var ipr = (NetHelper.IpResolver as IpResolver).GetValue("_ip") as Ip;
-        var db = ipr.GetValue("_zip") as IpDatabase;
+    static void Test2()
+    {
+        var ip = new Ip();
+        ip.Init();
 
-        for (var i = db.Start; i < db.End; i++)
+        var db = ip.Db;
+
+        for (var idx = 0u; idx < db.Count; idx++)
         {
-            addr = db.GetAddress(i);
+            var (set, addr) = db.GetIndex(idx);
 
-            if (i % 10000 == 0)
+            if (idx % 100 == 0)
             {
-                var ip2 = new IPAddress(i);
-                var buf = ip2.GetAddressBytes();
-                Array.Reverse(buf);
-                XTrace.WriteLine("{0}\t{1:000}.{2:000}.{3:000}.{4:000}\t{5}", i - db.Start, buf[0], buf[1], buf[2], buf[3], addr);
+                XTrace.WriteLine("{0}\t{1} - {2}\t{3}", idx, set.Start.ToStringIP(), set.End.ToStringIP(), addr);
             }
         }
     }
