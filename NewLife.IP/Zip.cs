@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.IO.MemoryMappedFiles;
+﻿using System.IO.MemoryMappedFiles;
 using System.Text;
 using NewLife.Log;
 
@@ -13,6 +12,7 @@ class Zip : IDisposable
     UInt32 Index_Count;
 
     MemoryMappedFile _mmf;
+    String _tempFile;
 
     /// <summary>数据流</summary>
     public Stream Stream { get; set; }
@@ -37,38 +37,14 @@ class Zip : IDisposable
             Stream?.Dispose();
             _mmf.TryDispose();
 
+            if (!_tempFile.IsNullOrEmpty() && File.Exists(_tempFile)) File.Delete(_tempFile);
+
             GC.SuppressFinalize(this);
         }
     }
     #endregion
 
     #region 数据源
-    public Zip SetStream(Stream stream)
-    {
-        var ms = new MemoryStream();
-
-        var buf = new Byte[3];
-        stream.Read(buf, 0, buf.Length);
-        stream.Position -= 3;
-
-        // 仅支持Gzip压缩，可用7z软件先压缩为gz格式
-        if (buf[0] == 0x1F & buf[1] == 0x8B && buf[2] == 0x08)
-            IOHelper.DecompressGZip(stream, ms);
-        else
-            stream.CopyTo(ms);
-
-        ms.Position = 0;
-        Stream = ms;
-
-        Index_Set = GetUInt32();
-        Index_End = GetUInt32();
-        Index_Count = (Index_End - Index_Set) / 7u + 1u;
-
-        XTrace.WriteLine("IP记录数：{0:n0}", Index_Count);
-
-        return this;
-    }
-
     public Zip SetFile(String file)
     {
         // 仅支持Gzip压缩，可用7z软件先压缩为gz格式
@@ -76,19 +52,19 @@ class Zip : IDisposable
         {
             // 解压缩到临时文件
             var file2 = Path.GetTempFileName();
-            {
-                using var fs2 = File.Create(file2);
-                using var fs = File.OpenRead(file);
-                fs.DecompressGZip(fs2);
-            }
+
+            using var fs2 = File.Create(file2);
+            using var fs = File.OpenRead(file);
+            fs.DecompressGZip(fs2);
 
             // 重新打开，切换到文件流
             file = file2;
+            _tempFile = file2;
         }
 
         // 启用MMF
         _mmf = MemoryMappedFile.CreateFromFile(file, FileMode.Open, null, 0, MemoryMappedFileAccess.ReadWrite);
-        Stream = _mmf.CreateViewStream(0, 0);
+        Stream = _mmf.CreateViewStream();
 
         Index_Set = GetUInt32();
         Index_End = GetUInt32();

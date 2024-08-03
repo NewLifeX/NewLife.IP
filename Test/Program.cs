@@ -8,11 +8,11 @@ class Program
 {
     static void Main(String[] args)
     {
+        Runtime.CreateConfigOnMissing = false;
         XTrace.UseConsole();
 
         try
         {
-            //TestHyperLogLog();
             Test1();
         }
         catch (Exception ex)
@@ -26,7 +26,6 @@ class Program
 
     static void Test1()
     {
-        //NetHelper.IpResolver = new IpResolver();
         IpResolver.Register();
 
         var ip = "47.100.59.126";

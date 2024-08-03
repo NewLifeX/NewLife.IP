@@ -6,140 +6,145 @@ using NewLife.Web;
 namespace NewLife.IP;
 
 /// <summary>IP搜索</summary>
-public static class Ip
+public class Ip
 {
-    private static readonly Object lockHelper = new();
-    private static Zip zip;
+    private readonly Object lockHelper = new();
+    private Zip _zip;
 
     /// <summary>数据文件</summary>
-    public static String DbFile { get; set; } = "";
+    public String DbFile { get; set; } = "";
 
     static Ip()
     {
 #if NETCOREAPP
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 #endif
-        var set = Setting.Current;
-        var dir = set.DataPath;
-        var ip = dir.CombinePath("ip.gz").GetBasePath();
-        if (File.Exists(ip)) DbFile = ip;
-
-        // 如果本地没有IP数据库，则从网络下载
-        var fi = DbFile.IsNullOrWhiteSpace() ? null : DbFile.AsFile();
-        if (fi == null || !fi.Exists || fi.LastWriteTime < new DateTime(2024, 03, 09))
-        {
-            var task = Task.Factory.StartNew(() =>
-            {
-                var url = set.PluginServer;
-                if (fi == null || !fi.Exists)
-                    XTrace.WriteLine("没有找到IP数据库{0}，准备联网获取 {1}", ip, url);
-                else
-                    XTrace.WriteLine("IP数据库{0}已过期，准备联网更新 {1}", ip, url);
-
-                // 无法下载ip地址库时，不要抛出异常影响业务层
-                try
-                {
-                    var client = new WebClientX
-                    {
-                        Log = XTrace.Log
-                    };
-                    var file = client.DownloadLink(url, "ip.gz", Path.GetTempPath());
-
-                    if (File.Exists(file))
-                    {
-                        if (File.Exists(ip)) File.Delete(ip);
-                        ip.EnsureDirectory(true);
-                        File.Move(file, ip);
-
-                        DbFile = ip;
-                        zip = null;
-                        // 让它重新初始化
-                        _inited = null;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    XTrace.WriteException(ex);
-                }
-            });
-            task.Wait(3_000);
-        }
     }
 
-    static Boolean? _inited;
-    static Boolean Init()
+    private Boolean? _inited;
+    private Boolean Init()
     {
         if (_inited != null) return _inited.Value;
         lock (typeof(Ip))
         {
             if (_inited != null) return _inited.Value;
-            _inited = false;
 
-            var z = new Zip();
+            var set = Setting.Current;
+            var ip = set.DataPath.CombinePath("ip.gz").GetBasePath();
+            if (File.Exists(ip)) DbFile = ip;
+
+            // 如果本地没有IP数据库，则从网络下载
+            var fi = DbFile.IsNullOrWhiteSpace() ? null : DbFile.AsFile();
+            if (fi == null || !fi.Exists || fi.Length < 3 * 1024 * 1024 || fi.LastWriteTime < new DateTime(2024, 03, 09))
+            {
+                var task = Task.Run(() =>
+                {
+                    // 下载成功时，让它重新初始化
+                    if (Download(ip, set.PluginServer))
+                    {
+                        _inited = null;
+                        _zip = null;
+                    }
+                });
+                // 静态构造函数里不能等待，否则异步函数也无法执行
+                task.Wait(5_000);
+            }
+
+            var zip = new Zip();
 
             if (!File.Exists(DbFile))
             {
-                //throw new InvalidOperationException("无法找到IP数据库" + DbFile + "！");
                 XTrace.WriteLine("无法找到IP数据库{0}", DbFile);
                 return false;
             }
-            XTrace.WriteLine("使用IP数据库{0}", DbFile);
-            //using (var fs = File.OpenRead(DbFile))
+            XTrace.WriteLine("IP数据库：{0}", DbFile);
+
+            try
             {
-                try
-                {
-                    //z.SetStream(fs);
-                    z.SetFile(DbFile);
+                zip.SetFile(DbFile);
 
-                    zip = z;
-                }
-                catch (Exception ex)
-                {
-                    XTrace.WriteException(ex);
-
-                    return false;
-                }
+                _zip = zip;
             }
-            //if (z.Stream != null) zip = z;
-        }
+            catch (Exception ex)
+            {
+                _inited = false;
+                XTrace.WriteException(ex);
 
-        //if (zip.Stream == null) throw new InvalidOperationException("无法打开IP数据库" + DbFile + "！");
+                return false;
+            }
+        }
 
         _inited = true;
         return true;
     }
 
+    private Boolean Download(String ip, String url)
+    {
+        var fi = ip.AsFile();
+        if (fi == null || !fi.Exists)
+            XTrace.WriteLine("没有找到IP数据库{0}，准备联网获取 {1}", ip, url);
+        else
+            XTrace.WriteLine("IP数据库{0}已过期，准备联网更新 {1}", ip, url);
+
+        // 无法下载ip地址库时，不要抛出异常影响业务层
+        try
+        {
+            var client = new WebClientX
+            {
+                Log = XTrace.Log
+            };
+            var file = client.DownloadLink(url, "ip.gz", Path.GetTempPath());
+
+            if (File.Exists(file))
+            {
+                if (File.Exists(ip)) File.Delete(ip);
+                ip.EnsureDirectory(true);
+                File.Move(file, ip);
+
+                DbFile = ip;
+
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+        }
+
+        return false;
+    }
+
     /// <summary>获取IP地址</summary>
     /// <param name="ip"></param>
     /// <returns></returns>
-    public static String GetAddress(String ip)
+    public String GetAddress(String ip)
     {
         if (String.IsNullOrEmpty(ip)) return "";
 
-        if (!Init() || zip == null) return "";
+        if (!Init() || _zip == null) return "";
 
         var ip2 = IPToUInt32(ip.Trim());
         lock (lockHelper)
         {
-            return zip.GetAddress(ip2) + "";
+            return _zip.GetAddress(ip2) + "";
         }
     }
 
     /// <summary>获取IP地址</summary>
     /// <param name="addr"></param>
     /// <returns></returns>
-    public static String GetAddress(IPAddress addr)
+    public String GetAddress(IPAddress addr)
     {
         if (addr == null) return "";
 
-        if (!Init() || zip == null) return "";
+        if (!Init() || _zip == null) return "";
 
         var buf = addr.GetAddressBytes();
         Array.Reverse(buf);
         var ip2 = (UInt32)buf.ToInt();
         lock (lockHelper)
         {
-            return zip.GetAddress(ip2) + "";
+            return _zip.GetAddress(ip2) + "";
         }
     }
 
