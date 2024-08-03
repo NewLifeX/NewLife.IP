@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.IO;
+using System.IO.MemoryMappedFiles;
+using System.Text;
 using NewLife.Log;
 
 namespace NewLife.IP;
@@ -9,11 +11,8 @@ class Zip : IDisposable
     UInt32 Index_Set;
     UInt32 Index_End;
     UInt32 Index_Count;
-    //UInt32 Search_Index_Set;
-    //UInt32 Search_Index_End;
-    //IndexInfo Search_Set;
-    //IndexInfo Search_Mid;
-    //IndexInfo Search_End;
+
+    MemoryMappedFile _mmf;
 
     /// <summary>数据流</summary>
     public Stream Stream { get; set; }
@@ -36,6 +35,7 @@ class Zip : IDisposable
         if (disposing)
         {
             Stream?.Dispose();
+            _mmf.TryDispose();
 
             GC.SuppressFinalize(this);
         }
@@ -68,12 +68,42 @@ class Zip : IDisposable
 
         return this;
     }
+
+    public Zip SetFile(String file)
+    {
+        // 仅支持Gzip压缩，可用7z软件先压缩为gz格式
+        if (file.EndsWithIgnoreCase(".gz"))
+        {
+            // 解压缩到临时文件
+            var file2 = Path.GetTempFileName();
+            {
+                using var fs2 = File.Create(file2);
+                using var fs = File.OpenRead(file);
+                fs.DecompressGZip(fs2);
+            }
+
+            // 重新打开，切换到文件流
+            file = file2;
+        }
+
+        // 启用MMF
+        _mmf = MemoryMappedFile.CreateFromFile(file, FileMode.Open, null, 0, MemoryMappedFileAccess.ReadWrite);
+        Stream = _mmf.CreateViewStream(0, 0);
+
+        Index_Set = GetUInt32();
+        Index_End = GetUInt32();
+        Index_Count = (Index_End - Index_Set) / 7u + 1u;
+
+        XTrace.WriteLine("IP记录数：{0:n0}", Index_Count);
+
+        return this;
+    }
     #endregion
 
     #region 方法
     public String GetAddress(UInt32 ip)
     {
-        if (Stream == null) return "";
+        //if (Stream == null) return "";
 
         var idxSet = 0u;
         var idxEnd = Index_Count - 1u;

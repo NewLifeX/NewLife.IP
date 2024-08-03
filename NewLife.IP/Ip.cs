@@ -84,11 +84,14 @@ public static class Ip
                 return false;
             }
             XTrace.WriteLine("使用IP数据库{0}", DbFile);
-            using (var fs = File.OpenRead(DbFile))
+            //using (var fs = File.OpenRead(DbFile))
             {
                 try
                 {
-                    z.SetStream(fs);
+                    //z.SetStream(fs);
+                    z.SetFile(DbFile);
+
+                    zip = z;
                 }
                 catch (Exception ex)
                 {
@@ -97,7 +100,7 @@ public static class Ip
                     return false;
                 }
             }
-            if (z.Stream != null) zip = z;
+            //if (z.Stream != null) zip = z;
         }
 
         //if (zip.Stream == null) throw new InvalidOperationException("无法打开IP数据库" + DbFile + "！");
