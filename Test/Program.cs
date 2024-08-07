@@ -38,7 +38,7 @@ class Program
     static void Test2()
     {
         Console.WriteLine("Test2");
-        Console.ReadKey();
+        //Console.ReadKey();
 
         var ip = new Ip();
         ip.Init();
@@ -55,7 +55,7 @@ class Program
                 XTrace.WriteLine("{0} {1} {2} {3}\t{4}", idx, set.Start.ToStringIP(), set.End.ToStringIP(), addr, area);
             }
         }
-        Console.WriteLine("Test2");
-        Console.ReadKey();
+        //Console.WriteLine("Test2");
+        //Console.ReadKey();
     }
 }

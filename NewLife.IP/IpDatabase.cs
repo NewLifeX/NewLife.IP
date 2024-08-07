@@ -71,7 +71,7 @@ public class IpDatabase : IDisposable
         // 启用MMF
         _mmf = MemoryMappedFile.CreateFromFile(file, FileMode.Open, null, 0, MemoryMappedFileAccess.ReadWrite);
 
-        using var view = _mmf.CreateViewAccessor();
+        var view = _view ??= _mmf.CreateViewAccessor();
         Start = view.ReadUInt32(0);
         End = view.ReadUInt32(4);
         Count = (End - Start) / 7u + 1u;
@@ -136,11 +136,11 @@ public class IpDatabase : IDisposable
         var tag = view.ReadByte(p);
         if (tag == 1)
         {
-            p = view.ReadUInt32(p + 1) & 0x00FF_FFFF;
+            p = view.ReadOffset(p + 1);
             tag = view.ReadByte(p);
             if (tag == 2)
             {
-                offset = view.ReadUInt32(p + 1) & 0x00FF_FFFF;
+                offset = view.ReadOffset(p + 1);
                 area = ReadArea(view, p + 4);
                 addr = ReadString(view, ref offset);
             }
@@ -154,7 +154,7 @@ public class IpDatabase : IDisposable
         {
             if (tag == 2)
             {
-                offset = view.ReadUInt32(p + 1) & 0x00FF_FFFF;
+                offset = view.ReadOffset(p + 1);
                 area = ReadArea(view, p + 4);
                 addr = ReadString(view, ref offset);
             }
@@ -171,7 +171,7 @@ public class IpDatabase : IDisposable
     {
         var tag = view.ReadByte(p);
         if (tag == 1 || tag == 2)
-            p = view.ReadUInt32(p + 1) & 0x00FF_FFFF;
+            p = view.ReadOffset(p + 1);
 
         return ReadString(view, ref p);
     }
@@ -202,7 +202,7 @@ public class IpDatabase : IDisposable
         var inf = new IndexInfo
         {
             Start = view.ReadUInt32(p),
-            Offset = view.ReadUInt32(p + 4) & 0x00FF_FFFF
+            Offset = view.ReadOffset(p + 4)
         };
         inf.End = view.ReadUInt32(inf.Offset);
 
