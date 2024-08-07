@@ -74,7 +74,7 @@ public class IpDatabase : IDisposable
         using var view = _mmf.CreateViewAccessor();
         Start = view.ReadUInt32(0);
         End = view.ReadUInt32(4);
-        Count = (End - Start) / 7u + 1u;
+        Count = (End - Start) / 7u;
 
         XTrace.WriteLine("IP记录数：{0:n0}", Count);
 
