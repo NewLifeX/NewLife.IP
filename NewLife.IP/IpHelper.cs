@@ -53,14 +53,4 @@ public static class IpHelper
 
     /// <summary>整数IP转IP字符串</summary>
     public static String ToStringIP(this UInt32 ip) => $"{(ip >> 24) & 0xFF:000}.{(ip >> 16) & 0xFF:000}.{(ip >> 8) & 0xFF:000}.{ip & 0xFF:000}";
-
-    [ThreadStatic]
-    private static Byte[] _buf = new Byte[4];
-    internal static unsafe UInt32 ReadOffset(this UnmanagedMemoryAccessor view, UInt32 p)
-    {
-        //var buf = stackalloc Byte[3];
-        view.ReadArray<Byte>(p, _buf, 0, 3);
-        return _buf[0] | (UInt32)_buf[1] << 8 | (UInt32)_buf[2] << 16;
-        //return view.ReadUInt32(p) & 0x00FF_FFFF;
-    }
 }

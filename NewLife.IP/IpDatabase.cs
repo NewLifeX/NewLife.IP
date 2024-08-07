@@ -133,19 +133,24 @@ public class IpDatabase : IDisposable
         String area;
 
         var p = offset + 4;
-        var tag = view.ReadByte(p);
+        var v = view.ReadUInt32(p);
+        var tag = v & 0xFF;
         if (tag == 1)
         {
-            p = view.ReadOffset(p + 1);
-            tag = view.ReadByte(p);
+            // 整体指向其它位置
+            p = v >> 8;
+            v = view.ReadUInt32(p);
+            tag = v & 0xFF;
             if (tag == 2)
             {
-                offset = view.ReadOffset(p + 1);
+                // 只有区域，地址在别的地方
+                offset = v >> 8;
                 area = ReadArea(view, p + 4);
                 addr = ReadString(view, ref offset);
             }
             else
             {
+                // 地址与区域连续
                 addr = ReadString(view, ref p);
                 area = ReadArea(view, p);
             }
@@ -154,12 +159,14 @@ public class IpDatabase : IDisposable
         {
             if (tag == 2)
             {
-                offset = view.ReadOffset(p + 1);
+                // 只有区域，地址在别的地方
+                offset = v >> 8;
                 area = ReadArea(view, p + 4);
                 addr = ReadString(view, ref offset);
             }
             else
             {
+                // 地址与区域连续
                 addr = ReadString(view, ref p);
                 area = ReadArea(view, p);
             }
@@ -169,28 +176,30 @@ public class IpDatabase : IDisposable
 
     String ReadArea(UnmanagedMemoryAccessor view, UInt32 p)
     {
-        var tag = view.ReadByte(p);
+        var v = view.ReadUInt32(p);
+        var tag = v & 0xFF;
         if (tag == 1 || tag == 2)
-            p = view.ReadOffset(p + 1);
+            p = v >> 8;
 
         return ReadString(view, ref p);
     }
 
+    [ThreadStatic]
+    private static Byte[] _buf = new Byte[64];
     private static Encoding _encoding;
     String ReadString(UnmanagedMemoryAccessor view, ref UInt32 p)
     {
-        var buf = new Byte[256];
-        var count = view.ReadArray(p, buf, 0, buf.Length);
+        var count = view.ReadArray(p, _buf, 0, _buf.Length);
 
         var k = 0u;
-        while (k < count && buf[k] != 0) k++;
+        while (k < count && _buf[k] != 0) k++;
         if (k == 0) return String.Empty;
 
         p += k;
 
         _encoding ??= Encoding.GetEncoding("GB2312");
 
-        var str = _encoding.GetString(buf, 0, (Int32)k).Trim().Trim('\0').Trim();
+        var str = _encoding.GetString(_buf, 0, (Int32)k).Trim().Trim('\0').Trim();
         if (str == "CZ88.NET") return String.Empty;
 
         return str;
@@ -202,11 +211,17 @@ public class IpDatabase : IDisposable
         var inf = new IndexInfo
         {
             Start = view.ReadUInt32(p),
-            Offset = view.ReadOffset(p + 4)
+            Offset = ReadOffset(view, p + 4)
         };
         inf.End = view.ReadUInt32(inf.Offset);
 
         return inf;
+    }
+
+    static unsafe UInt32 ReadOffset(UnmanagedMemoryAccessor view, UInt32 p)
+    {
+        view.ReadArray<Byte>(p, _buf, 0, 3);
+        return _buf[0] | (UInt32)_buf[1] << 8 | (UInt32)_buf[2] << 16;
     }
     #endregion
 }
