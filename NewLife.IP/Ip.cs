@@ -120,21 +120,20 @@ public class Ip
         return false;
     }
 
-    /// <summary>获取IP地址</summary>
+    /// <summary>获取IP地址所映射的物理地址</summary>
     /// <param name="ip"></param>
     /// <returns></returns>
-    public String GetAddress(String ip)
+    public (String area, String addr) GetAddress(String ip)
     {
-        if (String.IsNullOrEmpty(ip)) return "";
+        if (String.IsNullOrEmpty(ip)) return ("", "");
 
-        if (!Init() || _zip == null) return "";
+        if (!Init() || _zip == null) return ("", "");
 
-        var (addr, area) = _zip.GetAddress(ip.Trim().ToUInt32IP());
-        return addr + " " + area;
+        return _zip.GetAddress(ip.Trim().ToUInt32IP());
     }
 
-    /// <summary>获取IP地址</summary>
-    /// <param name="addr"></param>
+    /// <summary>获取IP地址所映射的物理地址</summary>
+    /// <param name="ip"></param>
     /// <returns></returns>
     public String GetAddress(IPAddress ip)
     {
@@ -142,7 +141,8 @@ public class Ip
 
         if (!Init() || _zip == null) return "";
 
-        var (addr, area) = _zip.GetAddress(ip.ToUInt32());
-        return addr + " " + area;
+        var (area, addr) = _zip.GetAddress(ip.ToUInt32());
+        //return area.TrimStart("中国\u2013").Replace("\u2013", null) + " " + addr;
+        return area + " " + addr;
     }
 }

@@ -9,17 +9,32 @@ public class IpResolver : IIPResolver
     private Ip _ip = new();
 
     /// <summary>获取物理地址</summary>
-    /// <param name="addr"></param>
+    /// <param name="ip"></param>
     /// <returns></returns>
-    public String GetAddress(IPAddress addr)
+    public String GetAddress(IPAddress ip)
     {
         try
         {
-            return _ip.GetAddress(addr);
+            return _ip.GetAddress(ip);
         }
         catch
         {
             return String.Empty;
+        }
+    }
+
+    /// <summary>获取指定IP的地址集合</summary>
+    /// <param name="ip"></param>
+    /// <returns></returns>
+    public (String area, String addr) GetAddress(String ip)
+    {
+        try
+        {
+            return _ip.GetAddress(ip);
+        }
+        catch
+        {
+            return (String.Empty, String.Empty);
         }
     }
 

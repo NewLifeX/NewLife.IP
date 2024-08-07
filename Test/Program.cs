@@ -59,12 +59,12 @@ class Program
 
         for (var idx = 0u; idx < db.Count; idx++)
         {
-            var (set, addr, area) = db.GetIndex(idx);
+            var (set, area, addr) = db.GetIndex(idx);
 
-            //if (idx % 1000 == 0)
-            if (addr.Contains("纯真") || addr.Contains("CZ") || area.Contains("纯真") || area.Contains("CZ"))
+            if (idx % 10000 == 0)
+            //if (addr.Contains("纯真") || addr.Contains("CZ") || area.Contains("纯真") || area.Contains("CZ"))
             {
-                XTrace.WriteLine("{0} {1} {2} {3}\t{4}", idx, set.Start.ToStringIP(), set.End.ToStringIP(), addr, area);
+                XTrace.WriteLine("{0} {1} {2} {3}\t{4}", idx, set.Start.ToStringIP(), set.End.ToStringIP(), area, addr);
             }
         }
         Console.WriteLine("End");

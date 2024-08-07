@@ -74,7 +74,7 @@ public class IpDatabase : IDisposable
         var view = _view ??= _mmf.CreateViewAccessor();
         Start = view.ReadUInt32(0);
         End = view.ReadUInt32(4);
-        Count = (End - Start) / 7u;
+        Count = (End - Start) / 7u + 1;
 
         XTrace.WriteLine("IP记录数：{0:n0}", Count);
 
@@ -86,7 +86,7 @@ public class IpDatabase : IDisposable
     /// <summary>获取IP的物理地址</summary>
     /// <param name="ip"></param>
     /// <returns></returns>
-    public (String addr, String area) GetAddress(UInt32 ip)
+    public (String area, String addr) GetAddress(UInt32 ip)
     {
         var idxSet = 0u;
         var idxEnd = Count - 1u;
@@ -118,19 +118,19 @@ public class IpDatabase : IDisposable
     /// <summary>获取指定索引处的信息</summary>
     /// <param name="idx"></param>
     /// <returns></returns>
-    public (IndexInfo, String addr, String area) GetIndex(UInt32 idx)
+    public (IndexInfo, String area, String addr) GetIndex(UInt32 idx)
     {
         var view = _view ??= _mmf.CreateViewAccessor();
 
         var info = ReadIndexInfo(view, idx);
-        var (addr, area) = ReadAddressInfo(view, info.Offset);
-        return (info, addr, area);
+        var (area, addr) = ReadAddressInfo(view, info.Offset);
+        return (info, area, addr);
     }
 
-    (String addr, String area) ReadAddressInfo(UnmanagedMemoryAccessor view, UInt32 offset)
+    (String area, String addr) ReadAddressInfo(UnmanagedMemoryAccessor view, UInt32 offset)
     {
-        String addr;
         String area;
+        String addr;
 
         var p = offset + 4;
         var v = view.ReadUInt32(p);
@@ -145,14 +145,14 @@ public class IpDatabase : IDisposable
             {
                 // 只有区域，地址在别的地方
                 offset = v >> 8;
-                area = ReadArea(view, p + 4);
-                addr = ReadString(view, ref offset);
+                addr = ReadAddress(view, p + 4);
+                area = ReadString(view, ref offset);
             }
             else
             {
                 // 地址与区域连续
-                addr = ReadString(view, ref p);
-                area = ReadArea(view, p);
+                area = ReadString(view, ref p);
+                addr = ReadAddress(view, p);
             }
         }
         else
@@ -161,20 +161,20 @@ public class IpDatabase : IDisposable
             {
                 // 只有区域，地址在别的地方
                 offset = v >> 8;
-                area = ReadArea(view, p + 4);
-                addr = ReadString(view, ref offset);
+                addr = ReadAddress(view, p + 4);
+                area = ReadString(view, ref offset);
             }
             else
             {
                 // 地址与区域连续
-                addr = ReadString(view, ref p);
-                area = ReadArea(view, p);
+                area = ReadString(view, ref p);
+                addr = ReadAddress(view, p);
             }
         }
-        return (addr, area);
+        return (area, addr);
     }
 
-    String ReadArea(UnmanagedMemoryAccessor view, UInt32 p)
+    String ReadAddress(UnmanagedMemoryAccessor view, UInt32 p)
     {
         var v = view.ReadUInt32(p);
         var tag = v & 0xFF;
