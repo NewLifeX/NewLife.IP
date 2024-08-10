@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using NewLife;
 using NewLife.IP;
 using Xunit;
@@ -72,5 +73,17 @@ public class IpTests
         var ss = addr.Split(' ');
         Assert.Equal("中国–内蒙古–赤峰", ss[0]);
         Assert.Equal("", ss[1]);
+    }
+
+    [Fact]
+    public void Test多线程()
+    {
+        Parallel.For(0, 100, i =>
+        {
+            var addr = "116.136.7.43".IPToAddress();
+            var ss = addr.Split(' ');
+            Assert.Equal("中国–内蒙古–赤峰", ss[0]);
+            Assert.Equal("", ss[1]);
+        });
     }
 }

@@ -185,21 +185,22 @@ public class IpDatabase : IDisposable
     }
 
     [ThreadStatic]
-    private static Byte[] _buf = new Byte[64];
+    private static Byte[] _buf;
     private static Encoding _encoding;
     String ReadString(UnmanagedMemoryAccessor view, ref UInt32 p)
     {
-        var count = view.ReadArray(p, _buf, 0, _buf.Length);
+        var buf = _buf ??= new Byte[64];
+        var count = view.ReadArray(p, buf, 0, buf.Length);
 
         var k = 0u;
-        while (k < count && _buf[k] != 0) k++;
+        while (k < count && buf[k] != 0) k++;
         if (k == 0) return String.Empty;
 
         p += k;
 
         _encoding ??= Encoding.GetEncoding("GB2312");
 
-        var str = _encoding.GetString(_buf, 0, (Int32)k).Trim().Trim('\0').Trim();
+        var str = _encoding.GetString(buf, 0, (Int32)k).Trim().Trim('\0').Trim();
         if (str == "CZ88.NET") return String.Empty;
 
         return str;
@@ -220,8 +221,9 @@ public class IpDatabase : IDisposable
 
     static unsafe UInt32 ReadOffset(UnmanagedMemoryAccessor view, UInt32 p)
     {
-        view.ReadArray<Byte>(p, _buf, 0, 3);
-        return _buf[0] | (UInt32)_buf[1] << 8 | (UInt32)_buf[2] << 16;
+        var buf = _buf ??= new Byte[64];
+        view.ReadArray<Byte>(p, buf, 0, 3);
+        return buf[0] | (UInt32)buf[1] << 8 | (UInt32)buf[2] << 16;
     }
     #endregion
 }
