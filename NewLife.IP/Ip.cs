@@ -94,6 +94,7 @@ public class Ip
         {
             var client = new WebClientX
             {
+                Timeout = 60_000,
                 Log = XTrace.Log
             };
             var file = client.DownloadLink(url, "ip.gz", Path.GetTempPath());
