@@ -99,8 +99,10 @@ public class Ip
             };
             var file = client.DownloadLink(url, "ip.gz", Path.GetTempPath());
 
-            if (File.Exists(file))
+            if (!file.IsNullOrEmpty() && File.Exists(file))
             {
+                XTrace.WriteLine("下载IP数据库成功，文件：{0}", file);
+
                 if (File.Exists(ip)) File.Delete(ip);
                 ip.EnsureDirectory(true);
                 File.Move(file, ip);
@@ -112,6 +114,8 @@ public class Ip
 
                 return true;
             }
+            else
+                XTrace.WriteLine("下载IP数据库失败，文件不存在！{0}", file);
         }
         catch (Exception ex)
         {
