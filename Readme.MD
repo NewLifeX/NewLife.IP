@@ -6,10 +6,180 @@
 ![Nuget](https://img.shields.io/nuget/v/NewLife.IP?logo=nuget)
 ![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/NewLife.IP?label=dev%20nuget&logo=nuget)
 
-IP地址库  
+高性能、跨平台的本地 IP 地址定位库（IPv4），支持将 IP 映射到（国家 / 省 / 市 / 区县）与运营商信息。通过内存映射文件 (MemoryMappedFile, MMF) 直接对压缩解包后的原始数据库文件进行二分检索，避免整表加载造成的托管内存压力，适合服务端与高并发场景。
 
 源码： https://github.com/NewLifeX/NewLife.IP  
-Nuget：NewLife.IP  
+Nuget：`NewLife.IP`
+
+---
+## 特性 (Features)
+- 多目标框架：net45 ~ net9.0 及 netstandard2.0 / 2.1，一包通用
+- 零第三方运行时依赖（仅依赖 `NewLife.Core` 基础能力）
+- 自动下载 & 更新 IP 数据文件（可配置数据目录与下载源）
+- GZip 压缩数据库文件（`ip.gz`），首次使用自动解压到临时文件再用 MMF 打开
+- 二分查找，O(log N) 复杂度；索引结构紧凑（7 字节 / 记录 + 变长字符串）
+- 线程安全的并发查询（只读 + ThreadStatic 缓冲）
+- 提供便捷扩展方法：`string.IPToAddress()` / `IPAddress.ToUInt32()` 等
+- 可插入到 `NewLife.Net` 生态，通过 `IpResolver.Register()` 统一解析
+- MIT 许可，便于商用 / 二次开发
+
+---
+## 安装 (Install)
+NuGet:
+```
+dotnet add package NewLife.IP
+```
+或在 `csproj` 引用：
+```xml
+<PackageReference Include="NewLife.IP" Version="*" />
+```
+
+---
+## 快速开始 (Quick Start)
+```csharp
+using NewLife.IP;
+using System;
+
+// 方式1：直接使用扩展方法（内部自动注册解析器并加载数据库）
+var full = "39.144.10.35".IPToAddress();
+Console.WriteLine(full);          // 中国–广东–深圳  <运营商信息>
+
+// 方式2：手动控制生命周期
+var ip = new Ip
+{
+    // 可选：自定义数据库文件（支持 .gz）。为空则使用 Setting.DataPath + ip.gz 自动下载
+    DbFile = "data/ip.gz"
+};
+ip.Init();
+var (area, addr) = ip.GetAddress("116.234.91.199");
+Console.WriteLine(area);          // 中国–上海–上海
+Console.WriteLine(addr);          // 运营商 / 机房描述
+
+// 方式3：集成 NewLife.Net
+IpResolver.Register(); // 将解析器注册到 NetHelper.IpResolver
+var geo = "61.160.219.25".IPToAddress();
+```
+
+---
+## 核心类型说明
+| 类型 | 作用 | 备注 |
+| ---- | ---- | ---- |
+| `Ip` | 高层封装：数据库文件定位、下载更新、对外查询 | 维护 `IpDatabase` 实例，懒加载 `Init()`
+| `IpDatabase` | 低层二进制数据库访问（MMF + 二分） | 读取索引（`IndexInfo`）+ 地址字符串
+| `IndexInfo` | 索引结构：Start/End/Offset | 7 字节索引区，Offset 指向数据块
+| `IpHelper` | IP 与 UInt32 / 字符串互转扩展方法 | IPv4 Big-Endian 表示
+| `IpResolver` | 实现 `NewLife.Net.IIPResolver` | 可注入生态组件统一解析
+
+---
+## 数据文件与更新机制
+- 默认文件名：`ip.gz`，放置于 `Setting.Current.DataPath`（来自 `NewLife.Core` 配置体系）
+- 若本地文件不存在、过小 (<3MB) 或早于内置阈值日期，则尝试从 `Setting.PluginServer` 下载
+- 下载成功：覆盖旧文件，`Ip.Init()` 重新构建 MMF
+- 支持用户自备同格式数据文件（兼容纯真 IPv4 库结构：索引区 + 记录区 + GB2312 文本）
+- 读取时：
+  1. 若为 `.gz` 则解压到临时文件
+  2. 使用 `MemoryMappedFile.CreateFromFile` 方式只读访问
+  3. 二分查找：通过起止 IP 定位记录 → 解析区域与地址字符串
+
+---
+## 查询流程 (简述)
+1. 输入 IPv4 => 转为 `UInt32` (Big-Endian)
+2. 在索引区做二分：`(start,end)` 覆盖范围即命中
+3. 读取指向的数据段：按标记字节 (1 / 2) 判断是否重定向
+4. 解析 GB2312 字节串，过滤保留字 `CZ88.NET`，返回 `(area, addr)`
+
+---
+## 性能与资源
+- 索引二分：log2(N) 级；N≈数十万记录时仅 ~18 次比较
+- MMF 避免一次性全部装入托管堆；仅在命中区域产生极少字符串分配
+- ThreadStatic 缓冲区（64B）降低重复分配；GB2312 解码仅针对命中段
+- 适合长生命周期后台服务 / 网关 / API Server；在高并发下 CPU 占用平稳
+
+(具体 Benchmark 会随版本在 Release Notes 中补充，欢迎 PR 补测数据。)
+
+---
+## 线程安全 (Thread Safety)
+- `Ip.Init()` 双重检查 + 锁，确保数据库单次加载
+- 查询只读；`IpDatabase` 内部不修改索引结构
+- `ReadString` 使用 `[ThreadStatic]` 缓冲 `_buf`，多线程无竞争
+- 可在多线程 / 并行任务中直接复用同一个 `Ip` 实例或扩展方法
+
+---
+## 与 NewLife 生态的集成
+- `NewLife.Net`：`IpResolver.Register()` 后，框架内部统一调用解析
+- 配置：借助 `NewLife.Core` 的 `Setting`（`DataPath`, `PluginServer`）实现可部署化
+- 日志：所有关键事件走 `XTrace`；可接入星尘 (Stardust) 分布式追踪与日志汇聚
+
+---
+## 自定义使用场景
+1. 在线 API 服务：在应用启动阶段调用一次 `new Ip().Init()`，对外提供 HTTP 接口
+2. 日志实时标注：在日志管线中使用 `string.IPToAddress()` 为访问日志 / 安全审计补充地理信息
+3. 安全风控：对登录、交易、告警来源 IP 做归属地 / 运营商的白名单或异地提醒
+4. 批量离线处理：循环读取 IP 列表，批量解析；建议复用单例 `Ip`
+
+---
+## 扩展方法速览
+| 方法 | 说明 |
+| ---- | ---- |
+| `string.IPToAddress()` | 返回 "区域 运营商" 拼接字符串 |
+| `string.ToUInt32IP()` | IPv4 字符串 → UInt32 (Big-Endian) |
+| `UInt32.ToStringIP()` | UInt32 → 补零 IPv4 字符串 |
+| `IPAddress.ToUInt32()` | `IPAddress` → UInt32 |
+| `UInt32.ToAddress()` | UInt32 → `IPAddress` |
+
+---
+## FAQ
+Q: 是否支持 IPv6?  
+A: 当前版本专注 IPv4，若有明确场景 & 公开高质量 IPv6 数据源，欢迎提交 Issue。  
+Q: 数据源从哪里来？  
+A: 使用与纯真数据库兼容格式（含重定向结构），用户可自行替换。  
+Q: 我能否只加载内存加速？  
+A: MMF 已足够轻量，通常无需额外缓存；如需自定义缓存，可在上层封装结果字典。  
+Q: 如何禁用自动下载？  
+A: 预先放置合法体积 & 日期的 `ip.gz` 到数据目录，或设置只读环境并自行管理更新。  
+
+---
+## 运行单元测试
+仓库包含 xUnit 测试工程 `XUnitTest`：
+```
+dotnet test
+```
+主要验证：
+- IP/UInt32 互转正确性
+- 常见真实 IP 解析的区域一致性
+- 多线程并发解析稳定性
+
+---
+## 版本策略 / 更新
+- 语义化版本：`MAJOR.MINOR.PATCH`，当前主版本为 2.x
+- 包含多 TFM，保持 API 向后兼容；破坏性变更会先标记 `[Obsolete]`
+- Release Notes（NuGet / GitHub）突出：性能 / 兼容 / 安全修复
+
+---
+## 贡献 (Contributing)
+欢迎：
+1. 提交 Issue（缺陷 / 新需求 / 性能数据 / IPv6 方案）
+2. PR：保持代码风格（参见 `.github/copilot-instructions.md`）
+3. 补充 Benchmark、数据源校验脚本、或国际化支持
+
+PR Checklist 建议：
+- [ ] 单元测试通过 & 覆盖新增逻辑
+- [ ] 未引入不必要的第三方依赖
+- [ ] 公共 API 变更已给出迁移说明
+- [ ] 性能敏感更改附带量化说明
+
+---
+## License
+MIT. 保留版权声明即可自由商用 / 二次分发。
+
+---
+## Roadmap (可能方向)
+- IPv6 支持（需要合适的精细地理库 & 体积评估）
+- 更精细的运营商 / 骨干网识别
+- 可选增量更新机制（避免整包下载）
+- Benchmark & Prometheus 统计示例
+
+---
 
 ## 新生命项目矩阵
 各项目默认支持net9.0/netstandard2.1/netstandard2.0/net4.62/net4.5，旧版（2024.0801）支持net4.0/net2.0  
