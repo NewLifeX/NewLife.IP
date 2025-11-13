@@ -45,7 +45,7 @@ public class Ip
             var fi = ip.IsNullOrWhiteSpace() ? null : ip.AsFile();
             if (fi == null || !fi.Exists || fi.Length < 3 * 1024 * 1024 || fi.LastWriteTime < new DateTime(2025, 02, 02))
             {
-                var task = Task.Run(() => Download(ip));
+                var task = Task.Factory.StartNew(() => Download(ip), TaskCreationOptions.LongRunning);
                 // 静态构造函数里不能等待，否则异步函数也无法执行
                 task.Wait(5_000);
             }

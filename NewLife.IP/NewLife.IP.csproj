@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net45;net461;netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net45;net461;netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <AssemblyTitle>IP地址库</AssemblyTitle>
     <Description>IP地址解析为物理地址</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2025 新生命开发团队</Copyright>
-    <VersionPrefix>2.3</VersionPrefix>
+    <VersionPrefix>2.4</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -44,7 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="11.8.2025.1112" />
+    <PackageReference Include="NewLife.Core" Version="11.9.2025.1112" />
   </ItemGroup>
 
   <ItemGroup>
