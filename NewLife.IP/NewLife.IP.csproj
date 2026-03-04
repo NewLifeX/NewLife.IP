@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net45;net461;netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
-    <AssemblyTitle>IP地址库</AssemblyTitle>
-    <Description>IP地址解析为物理地址</Description>
+    <AssemblyTitle>IPv4归属地解析库</AssemblyTitle>
+    <Description>高性能本地IPv4归属地查询库，基于MMF二分检索并支持IP库自动更新。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 新生命开发团队</Copyright>
     <VersionPrefix>2.4</VersionPrefix>
