@@ -6,7 +6,7 @@
 ![Nuget](https://img.shields.io/nuget/v/NewLife.IP?logo=nuget)
 ![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/NewLife.IP?label=dev%20nuget&logo=nuget)
 
-高性能、跨平台的本地 IP 地址定位库（IPv4），支持将 IP 映射到（国家 / 省 / 市 / 区县）与运营商信息。通过内存映射文件 (MemoryMappedFile, MMF) 直接对压缩解包后的原始数据库文件进行二分检索，避免整表加载造成的托管内存压力，适合服务端与高并发场景。
+高性能、跨平台的 IP 地址定位库（IPv4），**支持本地离线 + 在线 API 双数据源，由用户按需选择**。离线模式通过内存映射文件 (MemoryMappedFile, MMF) 直接对压缩解包后的原始数据库文件进行二分检索，避免整表加载造成的托管内存压力，适合服务端与高并发场景；在线模式调用第三方 Web API（默认 ip-api.com，含缓存与容错）获取归属地，适合数据新鲜度要求高的场景。
 
 源码： https://github.com/NewLifeX/NewLife.IP  
 Nuget：`NewLife.IP`
@@ -28,6 +28,7 @@ Nuget：`NewLife.IP`
 - 线程安全的并发查询（只读 + ThreadStatic 缓冲）
 - 提供便捷扩展方法：`string.IPToAddress()` / `IPAddress.ToUInt32()` 等
 - 可插入到 `NewLife.Net` 生态，通过 `IpResolver.Register()` 统一解析
+- **双数据源**：本地离线（MMF 秒回）+ 在线 API（可选，默认 ip-api.com，含缓存与容错），`IpResolver.Online` 一键切换
 - MIT 许可，便于商用 / 二次开发
 
 ---
@@ -65,6 +66,11 @@ Console.WriteLine(addr);          // 运营商 / 机房描述
 // 方式3：集成 NewLife.Net
 IpResolver.Register(); // 将解析器注册到 NetHelper.IpResolver
 var geo = "61.160.219.25".IPToAddress();
+
+// 方式4：在线模式（可选，默认 ip-api.com 免费 API，含缓存与容错）
+IpResolver.Online = true; // 切换后 IPToAddress 走在线 API
+var geo2 = "8.8.8.8".IPToAddress();
+// 在线查询失败返回空并写日志，不阻断业务；切回离线只需 Online = false
 ```
 
 ---
@@ -75,8 +81,8 @@ var geo = "61.160.219.25".IPToAddress();
 | `IpDatabase` | 低层二进制数据库访问（MMF + 二分） | 读取索引（`IndexInfo`）+ 地址字符串
 | `IndexInfo` | 索引结构：Start/End/Offset | 7 字节索引区，Offset 指向数据块
 | `IpHelper` | IP 与 UInt32 / 字符串互转扩展方法 | IPv4 Big-Endian 表示
-| `IpResolver` | 实现 `NewLife.Net.IIPResolver` | 可注入生态组件统一解析
-
+| `IpResolver` | 实现 `NewLife.Net.IIPResolver` | 可注入生态组件统一解析| `OnlineIp` | 在线 API 解析器（默认 ip-api.com） | 含缓存与容错，`IpResolver.Online` 切换 |
+| `IpCsv` | DB-IP CSV → 纯真格式转换器 | 扩展数据源（CORE-5） |
 ---
 ## 数据文件与更新机制
 - 默认文件名：`ip.gz`，放置于 `Setting.Current.DataPath`（来自 `NewLife.Core` 配置体系）

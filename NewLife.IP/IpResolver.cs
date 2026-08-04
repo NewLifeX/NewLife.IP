@@ -7,6 +7,13 @@ namespace NewLife.IP;
 public class IpResolver : IIPResolver
 {
     private Ip _ip = new();
+    private OnlineIp _online;
+
+    /// <summary>是否使用在线解析。默认false（离线），设为true后所有查询走在线API</summary>
+    public static Boolean Online { get; set; }
+
+    /// <summary>在线解析器</summary>
+    OnlineIp OnlineDb => _online ??= new OnlineIp();
 
     /// <summary>获取物理地址</summary>
     /// <param name="ip"></param>
@@ -15,7 +22,7 @@ public class IpResolver : IIPResolver
     {
         try
         {
-            return _ip.GetAddress(ip);
+            return Online ? OnlineDb.GetAddress(ip) : _ip.GetAddress(ip);
         }
         catch
         {
@@ -30,7 +37,7 @@ public class IpResolver : IIPResolver
     {
         try
         {
-            return _ip.GetAddress(ip);
+            return Online ? OnlineDb.GetAddress(ip) : _ip.GetAddress(ip);
         }
         catch
         {
