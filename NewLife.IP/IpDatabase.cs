@@ -38,6 +38,7 @@ public class IpDatabase : IDisposable
     {
         if (disposing)
         {
+            _view.TryDispose();
             _mmf.TryDispose();
 
             if (!_tempFile.IsNullOrEmpty() && File.Exists(_tempFile)) File.Delete(_tempFile);
@@ -196,7 +197,8 @@ public class IpDatabase : IDisposable
         while (k < count && buf[k] != 0) k++;
         if (k == 0) return String.Empty;
 
-        p += k;
+        // 跳过0终止符，确保后续地址字符串从内容开始读取
+        p += k + 1;
 
         _encoding ??= Encoding.GetEncoding("GB2312");
 

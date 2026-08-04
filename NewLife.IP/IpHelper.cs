@@ -52,5 +52,7 @@ public static class IpHelper
     }
 
     /// <summary>整数IP转IP字符串</summary>
+    /// <param name="ip">大端整数IP</param>
+    /// <returns>补零IPv4字符串，如 047.100.059.126</returns>
     public static String ToStringIP(this UInt32 ip) => $"{(ip >> 24) & 0xFF:000}.{(ip >> 16) & 0xFF:000}.{(ip >> 8) & 0xFF:000}.{ip & 0xFF:000}";
 }
