@@ -16,8 +16,11 @@ namespace NewLife.IP;
 public class OnlineIp : IIPResolver
 {
     #region 属性
-    /// <summary>在线API地址。默认 ip-api.com，{0} 为IP占位符</summary>
+    /// <summary>在线API地址。默认 ip-api.com，{0} 为IP占位符，{1} 为Key占位符</summary>
     public String Server { get; set; } = "http://ip-api.com/json/{0}";
+
+    /// <summary>API Key。腾讯/高德/百度等国内厂商需要，为空则不携带</summary>
+    public String Key { get; set; }
 
     /// <summary>超时时间。默认5000毫秒</summary>
     public Int32 Timeout { get; set; } = 5_000;
@@ -74,6 +77,17 @@ public class OnlineIp : IIPResolver
         return area + " " + addr;
     }
 
+    /// <summary>构造在线API请求地址（替换 {0}=IP、{1}=Key 占位符）</summary>
+    /// <param name="ip">IP字符串</param>
+    /// <returns>请求地址</returns>
+    public String BuildUrl(String ip)
+    {
+        var url = Server;
+        if (url.Contains("{0}")) url = url.Replace("{0}", ip);
+        if (url.Contains("{1}")) url = url.Replace("{1}", Key ?? "");
+        return url;
+    }
+
     /// <summary>请求在线API并解析</summary>
     /// <param name="ip">IP字符串</param>
     /// <returns>区域与地址</returns>
@@ -82,8 +96,7 @@ public class OnlineIp : IIPResolver
         try
         {
             var client = _client ??= new WebClientX { Timeout = Timeout, Log = XTrace.Log };
-            var url = String.Format(Server, ip);
-            var json = client.GetHtml(url);
+            var json = client.GetHtml(BuildUrl(ip));
 
             return Parse(json);
         }
@@ -95,7 +108,7 @@ public class OnlineIp : IIPResolver
         }
     }
 
-    /// <summary>解析在线API响应（ip-api.com JSON格式）</summary>
+    /// <summary>解析在线API响应（支持 ip-api.com / 腾讯 / 高德 / 百度 格式自动识别）</summary>
     /// <param name="json">JSON响应</param>
     /// <returns>区域与地址</returns>
     public static (String area, String addr) Parse(String json)
@@ -107,17 +120,55 @@ public class OnlineIp : IIPResolver
             var dic = JsonParser.Decode(json);
             if (dic == null) return ("", "");
 
-            // ip-api.com 成功响应 status=success
-            if (dic.TryGetValue("status", out var status) && status?.ToString() != "success")
+            // 腾讯位置服务：result.ad_info.nation/province/city/district + result.isp
+            if (dic.TryGetValue("result", out var result) && result is IDictionary<String, Object> resultDic)
+            {
+                var ad = GetDic(resultDic, "ad_info");
+                var nation = GetField(ad, "nation");
+                var province = GetField(ad, "province");
+                var city = GetField(ad, "city");
+                var district = GetField(ad, "district");
+                var isp = GetField(resultDic, "isp");
+
+                var area = Join(nation, province, city, district);
+                return (area, isp ?? "");
+            }
+
+            // 百度地图：content.address_detail.province/city/district + 顶层 address
+            if (dic.TryGetValue("content", out var content) && content is IDictionary<String, Object> contentDic)
+            {
+                var detail = GetDic(contentDic, "address_detail");
+                var province = GetField(detail, "province");
+                var city = GetField(detail, "city");
+                var district = GetField(detail, "district");
+                var addr = GetField(dic, "address");
+
+                var area = Join(province, city, district);
+                return (area, addr ?? "");
+            }
+
+            // 高德：顶层 province/city（status=1）
+            if (dic.TryGetValue("status", out var status) && status?.ToString() == "1")
+            {
+                var province = GetField(dic, "province");
+                var city = GetField(dic, "city");
+                var district = GetField(dic, "district");
+
+                var area = Join(province, city, district);
+                return (area, "");
+            }
+
+            // ip-api.com：顶层 status=success + country/regionName/city/isp
+            if (dic.TryGetValue("status", out var st) && st?.ToString() != "success")
                 return ("", "");
 
             var country = GetField(dic, "country");
             var region = GetField(dic, "regionName");
-            var city = GetField(dic, "city");
-            var isp = GetField(dic, "isp");
+            var city2 = GetField(dic, "city");
+            var isp2 = GetField(dic, "isp");
 
-            var area = Join(country, region, city);
-            return (area, isp ?? "");
+            var area2 = Join(country, region, city2);
+            return (area2, isp2 ?? "");
         }
         catch
         {
@@ -131,7 +182,18 @@ public class OnlineIp : IIPResolver
     /// <returns>字段值，不存在返回null</returns>
     static String GetField(IDictionary<String, Object> dic, String key)
     {
-        if (dic.TryGetValue(key, out var value) && value != null) return value.ToString();
+        if (dic != null && dic.TryGetValue(key, out var value) && value != null) return value.ToString();
+        return null;
+    }
+
+    /// <summary>获取嵌套字典</summary>
+    /// <param name="dic">字典</param>
+    /// <param name="key">字段名</param>
+    /// <returns>嵌套字典，不存在返回null</returns>
+    static IDictionary<String, Object> GetDic(IDictionary<String, Object> dic, String key)
+    {
+        if (dic != null && dic.TryGetValue(key, out var value) && value is IDictionary<String, Object> sub)
+            return sub;
         return null;
     }
 

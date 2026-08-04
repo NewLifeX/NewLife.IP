@@ -76,4 +76,57 @@ public class OnlineIpTests
         Assert.Equal("测试省", area);
         Assert.Equal("测试运营商", addr);
     }
+
+    [Fact(DisplayName = "Parse 腾讯位置服务响应")]
+    public void Parse_Tencent()
+    {
+        var json = "{\"status\":0,\"message\":\"query ok\",\"result\":{\"ip\":\"116.234.91.199\",\"location\":{\"lat\":31.23,\"lng\":121.47},\"ad_info\":{\"nation\":\"中国\",\"province\":\"上海市\",\"city\":\"上海市\",\"district\":\"杨浦区\",\"adcode\":310110},\"isp\":\"电信\"}}";
+
+        var (area, addr) = OnlineIp.Parse(json);
+
+        Assert.Equal("中国–上海市–上海市–杨浦区", area);
+        Assert.Equal("电信", addr);
+    }
+
+    [Fact(DisplayName = "Parse 高德响应")]
+    public void Parse_Amap()
+    {
+        var json = "{\"status\":\"1\",\"info\":\"OK\",\"infocode\":\"10000\",\"province\":\"广东省\",\"city\":\"深圳市\",\"adcode\":\"440300\",\"rectangle\":\"113.79,22.47;114.63,22.86\"}";
+
+        var (area, addr) = OnlineIp.Parse(json);
+
+        Assert.Equal("广东省–深圳市", area);
+        Assert.Equal("", addr);
+    }
+
+    [Fact(DisplayName = "Parse 百度响应")]
+    public void Parse_Baidu()
+    {
+        var json = "{\"address\":\"CN|北京|北京|None|CHINANET|0|0\",\"content\":{\"address_detail\":{\"province\":\"北京市\",\"city\":\"北京市\",\"district\":\"\",\"adcode\":\"110000\"},\"point\":{\"x\":\"116.39\",\"y\":\"39.92\"}},\"status\":0}";
+
+        var (area, addr) = OnlineIp.Parse(json);
+
+        Assert.Equal("北京市–北京市", area);
+        Assert.Equal("CN|北京|北京|None|CHINANET|0|0", addr);
+    }
+
+    [Fact(DisplayName = "BuildUrl 默认ip-api无Key")]
+    public void BuildUrl_Default()
+    {
+        var ip = new OnlineIp();
+
+        Assert.Equal("http://ip-api.com/json/8.8.8.8", ip.BuildUrl("8.8.8.8"));
+    }
+
+    [Fact(DisplayName = "BuildUrl 带Key的国内厂商地址")]
+    public void BuildUrl_Key()
+    {
+        var ip = new OnlineIp
+        {
+            Server = "https://apis.map.qq.com/ws/location/v1/ip?ip={0}&key={1}",
+            Key = "mykey",
+        };
+
+        Assert.Equal("https://apis.map.qq.com/ws/location/v1/ip?ip=8.8.8.8&key=mykey", ip.BuildUrl("8.8.8.8"));
+    }
 }

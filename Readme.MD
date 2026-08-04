@@ -71,6 +71,16 @@ var geo = "61.160.219.25".IPToAddress();
 IpResolver.Online = true; // 切换后 IPToAddress 走在线 API
 var geo2 = "8.8.8.8".IPToAddress();
 // 在线查询失败返回空并写日志，不阻断业务；切回离线只需 Online = false
+
+// 方式5：在线模式对接国内厂商（腾讯位置服务，需自行申请免费 Key，中国境内省市区县高精度）
+var online = new OnlineIp
+{
+    Server = "https://apis.map.qq.com/ws/location/v1/ip?ip={0}&key={1}", // {0}=IP，{1}=Key
+    Key = "你的腾讯位置服务Key",
+    Cache = MemoryCache.Instance, // 可选：启用在线查询缓存（NewLife.Caching）
+};
+var (area, addr) = online.GetAddress("116.234.91.199"); // area=中国–上海市–上海市–杨浦区，addr=电信
+// 高德 / 百度同构：仅需替换 Server 与 Key，Parse 自动识别响应格式
 ```
 
 ---
