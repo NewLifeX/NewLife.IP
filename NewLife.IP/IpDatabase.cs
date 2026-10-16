@@ -134,6 +134,10 @@ public class IpDatabase : IDisposable
         String addr;
 
         var p = offset + 4;
+        // MMF 视图容量跨平台不同（Windows 按页对齐、Linux 精确等于文件大小），
+        // 对截断或尾部记录显式边界保护，避免 Linux 越界异常
+        if (p + 4 > view.Capacity) return (String.Empty, String.Empty);
+
         var v = view.ReadUInt32(p);
         var tag = v & 0xFF;
         if (tag == 1)
@@ -177,6 +181,10 @@ public class IpDatabase : IDisposable
 
     String ReadAddress(UnmanagedMemoryAccessor view, UInt32 p)
     {
+        // 普通记录末尾的空地址仅 1 个终止符 0 字节且可能位于文件尾，剩余不足 4 字节时按空地址处理；
+        // Windows 视图容量页对齐可越界读零，Linux 精确容量会抛异常，必须显式保护
+        if (p + 4 > view.Capacity) return String.Empty;
+
         var v = view.ReadUInt32(p);
         var tag = v & 0xFF;
         if (tag == 1 || tag == 2)
