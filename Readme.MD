@@ -20,8 +20,9 @@ Nuget：`NewLife.IP`
 
 ---
 ## 特性 (Features)
-- 多目标框架：net45 ~ net9.0 及 netstandard2.0 / 2.1，一包通用
+- 多目标框架：net45 ~ net10.0 及 netstandard2.0 / 2.1，一包通用
 - 零第三方运行时依赖（仅依赖 `NewLife.Core` 基础能力）
+- AOT 友好：NativeAOT 冒烟（win-x64 / linux-x64 / linux-arm64）+ 龙芯 LA64 验证，CI 单元测试覆盖四大 RID
 - 自动下载 & 更新 IP 数据文件（可配置数据目录与下载源）
 - GZip 压缩数据库文件（`ip.gz`），首次使用自动解压到临时文件再用 MMF 打开
 - 二分查找，O(log N) 复杂度；索引结构紧凑（7 字节 / 记录 + 变长字符串）
@@ -91,7 +92,8 @@ var (area, addr) = online.GetAddress("116.234.91.199"); // area=中国–上海�
 | `IpDatabase` | 低层二进制数据库访问（MMF + 二分） | 读取索引（`IndexInfo`）+ 地址字符串
 | `IndexInfo` | 索引结构：Start/End/Offset | 7 字节索引区，Offset 指向数据块
 | `IpHelper` | IP 与 UInt32 / 字符串互转扩展方法 | IPv4 Big-Endian 表示
-| `IpResolver` | 实现 `NewLife.Net.IIPResolver` | 可注入生态组件统一解析| `OnlineIp` | 在线 API 解析器（默认 ip-api.com） | 含缓存与容错，`IpResolver.Online` 切换 |
+| `IpResolver` | 实现 `NewLife.Net.IIPResolver` | 可注入生态组件统一解析 |
+| `OnlineIp` | 在线 API 解析器（默认 ip-api.com） | 含缓存与容错，`IpResolver.Online` 切换 |
 | `IpCsv` | DB-IP CSV → 纯真格式转换器 | 扩展数据源（CORE-5） |
 ---
 ## 数据文件与更新机制
@@ -171,6 +173,8 @@ dotnet test
 - IP/UInt32 互转正确性
 - 常见真实 IP 解析的区域一致性
 - 多线程并发解析稳定性
+
+CI（push/PR 触发）在 win-x64 / linux-x64 / linux-arm64 / linux-la64（龙芯，QEMU）四大 RID 运行全量单测；另有 `AotSmoke` 工程做 NativeAOT 冒烟对照（见 `.github/workflows/`）。
 
 ---
 ## 版本策略 / 更新
