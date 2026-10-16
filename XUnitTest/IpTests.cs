@@ -19,7 +19,8 @@ public class IpTests
         var addr = "39.144.10.35".IPToAddress();
 
         //#if DEBUG
-        if (!"data/ip.gz".AsFile().Exists) Thread.Sleep(9000);
+        // 大小写与 Ip.Init 的数据目录（Data）一致，Linux 下区分大小写
+        if (!"Data/ip.gz".AsFile().Exists) Thread.Sleep(9000);
         //#endif
     }
 

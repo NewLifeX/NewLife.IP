@@ -20,6 +20,12 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <!-- net8.0+ 常驻启用 AOT/裁剪分析器：0 告警成为构建期硬约束（aot.yml 分析器检查）
+       注意 SDK 会将 IsTrimmable 一并置真，这些目标的程序集会嵌入 IsTrimmable 元数据 -->
+  <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
   <PropertyGroup>
     <PackageId>$(AssemblyName)</PackageId>
     <Authors>$(Company)</Authors>
@@ -44,7 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="11.15.2026.501" />
+    <PackageReference Include="NewLife.Core" Version="12.0.2026.1016-beta0911" />
   </ItemGroup>
 
   <ItemGroup>
