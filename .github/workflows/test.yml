@@ -36,7 +36,7 @@ jobs:
     - name: Build Solution
       # 全解决方案编译校验（NewLife.IP / XUnitTest / Test / AotSmoke），单跑一次即可
       if: matrix.rid == 'win-x64'
-      run: dotnet build NewLife.IP.sln -c Release --nologo
+      run: dotnet build NewLife.IP.slnx -c Release --nologo
     - name: Test
       run: dotnet test XUnitTest/XUnitTest.csproj -c Release --nologo
 
