@@ -89,31 +89,28 @@ public class IpDatabase : IDisposable
     /// <returns></returns>
     public (String area, String addr) GetAddress(UInt32 ip)
     {
-        var idxSet = 0u;
-        var idxEnd = Count - 1u;
         // 频繁销毁视图会导致性能下降
         //using var view = _mmf.CreateViewAccessor();
         var view = _view ??= _mmf.CreateViewAccessor();
 
         // 二分法搜索，找到IP所在区间
-        IndexInfo set;
-        while (true)
+        // 索引区间之外的IP必须返回空；旧实现会在区间外反复收缩到同一索引，导致死循环
+        var low = 0;
+        var high = (Int32)Count - 1;
+        while (low <= high)
         {
-            set = ReadIndexInfo(view, idxSet);
-            if (ip >= set.Start && ip <= set.End) break;
+            var mid = low + ((high - low) >> 1);
+            var inf = ReadIndexInfo(view, (UInt32)mid);
 
-            var end = ReadIndexInfo(view, idxEnd);
-            if (ip >= end.Start && ip <= end.End) return ReadAddressInfo(view, end.Offset);
-
-            var mid = ReadIndexInfo(view, (idxEnd + idxSet) / 2u);
-            if (ip >= mid.Start && ip <= mid.End) return ReadAddressInfo(view, mid.Offset);
-
-            if (ip < mid.Start)
-                idxEnd = (idxEnd + idxSet) / 2u;
+            if (ip < inf.Start)
+                high = mid - 1;
+            else if (ip > inf.End)
+                low = mid + 1;
             else
-                idxSet = (idxEnd + idxSet) / 2u;
+                return ReadAddressInfo(view, inf.Offset);
         }
-        return ReadAddressInfo(view, set.Offset);
+
+        return (String.Empty, String.Empty);
     }
 
     /// <summary>获取指定索引处的信息</summary>
