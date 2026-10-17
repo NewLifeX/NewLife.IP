@@ -1,4 +1,5 @@
-﻿using System.Net;
+using System;
+using System.Net;
 using NewLife;
 using NewLife.IP;
 using Xunit;
@@ -55,5 +56,21 @@ public class IpHelperTests
 
         var addr = str.ToUInt32IP();
         Assert.Equal("047.100.059.126", addr.ToStringIP());
+    }
+
+    [Fact(DisplayName = "ToUInt32IP 缺段补零、非法输入返回0")]
+    public void ToUInt32IP_Partial()
+    {
+        Assert.Equal(0x01020300u, "1.2.3".ToUInt32IP());
+        Assert.Equal(0x01020000u, "1.2".ToUInt32IP());
+        Assert.Equal(0u, "abc".ToUInt32IP());
+        Assert.Equal(0u, "".ToUInt32IP());
+    }
+
+    [Fact(DisplayName = "ToStringIP 边界值补零")]
+    public void ToStringIP_Boundary()
+    {
+        Assert.Equal("000.000.000.000", 0u.ToStringIP());
+        Assert.Equal("255.255.255.255", UInt32.MaxValue.ToStringIP());
     }
 }

@@ -118,6 +118,51 @@ public class IpCsvTests
         }
     }
 
+    [Fact(DisplayName = "Convert 乱序记录按起始IP排序")]
+    public void Convert_Unordered()
+    {
+        var dir = CreateDir();
+        try
+        {
+            var csv = BuildCsv(dir, "start_ip,end_ip,country_code,country_name,state_prov,district,city\n" +
+                "9.0.0.0,9.0.0.255,JP,Japan,Tokyo,,Tokyo\n" +
+                "8.0.0.0,8.0.0.255,CN,China,Beijing,,Beijing\n");
+            var dbFile = Path.Combine(dir, "ip.db");
+
+            var count = IpCsv.Convert(csv, dbFile);
+            Assert.Equal(2, count);
+
+            using var db = new IpDatabase();
+            db.SetFile(dbFile);
+
+            // 排序后二分检索可命中两条记录
+            Assert.Equal("China–Beijing–Beijing", db.GetAddress(0x08000000u).area);
+            Assert.Equal("Japan–Tokyo–Tokyo", db.GetAddress(0x09000000u).area);
+        }
+        finally
+        {
+            Cleanup(dir);
+        }
+    }
+
+    [Fact(DisplayName = "Convert 无有效记录抛异常")]
+    public void Convert_NoRecord()
+    {
+        var dir = CreateDir();
+        try
+        {
+            var csv = BuildCsv(dir, "start_ip,end_ip,country_code,country_name,state_prov,district,city\n" +
+                "invalid,1.0.0.1,XX,Bad,,,\n");
+            var dbFile = Path.Combine(dir, "ip.db");
+
+            Assert.Throws<InvalidOperationException>(() => IpCsv.Convert(csv, dbFile));
+        }
+        finally
+        {
+            Cleanup(dir);
+        }
+    }
+
     [Fact(DisplayName = "Convert 参数校验与文件不存在")]
     public void Convert_Args()
     {

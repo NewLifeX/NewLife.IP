@@ -23,3 +23,5 @@ bld/
 *.nupkg
 /BinTest
 /BinUnitTest
+TestResults/
+*.trx

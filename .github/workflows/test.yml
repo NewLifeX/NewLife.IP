@@ -38,12 +38,13 @@ jobs:
       if: matrix.rid == 'win-x64'
       run: dotnet build NewLife.IP.slnx -c Release --nologo
     - name: Test
-      run: dotnet test XUnitTest/XUnitTest.csproj -c Release --nologo
+      # xUnit v3 走 Microsoft.Testing.Platform（global.json 已指定 test.runner），--project 为 .NET 10 新 dotnet test 语法
+      run: dotnet test --project XUnitTest/XUnitTest.csproj -c Release --nologo
 
   # Linux LoongArch64（LA64，非阻塞观察项）：GitHub 无 LA64 runner/runtime pack，
   # 采用 docker + QEMU 用户态仿真（loong64 binfmt）+ 龙芯 SDK 在 loong64 容器内跑 net10.0 全量单测。
   # 容器内不装 ICU（invariant 模式，测试无 culture 依赖，消除 apt 慢源卡点）；
-  # vstest 不可用（龙芯 SDK 版不认识 LoongArch64 架构、宿主版是 x64 R2R 无法加载），改自宿主 xunit 执行器。
+  # xUnit v3 自带 Microsoft.Testing.Platform 进程内执行器，直接以 LA64 运行时执行测试程序集即可，无需 vstest。
   # continue-on-error：该 RID 的目标是尽早暴露龙芯平台兼容问题，任何环节出错都不阻塞主分支。
   loongarch64:
     name: test (linux-la64 qemu)
@@ -68,77 +69,6 @@ jobs:
           https://github.com/loongson/dotnet/releases/download/v10.0.113-loongarch64/dotnet-sdk-10.0.113-linux-loongarch64.tar.gz
         mkdir -p "$HOME/la64" && tar -xzf "$HOME/la64-sdk.tar.gz" -C "$HOME/la64"
         chmod +x "$HOME/la64/dotnet" || true
-    - name: Build Self-host xUnit Runner (host x64 SDK)
-      # 龙芯 SDK 自带 vstest 不识别 LoongArch64 架构（NotSupportedException），
-      # 宿主 SDK 的 vstest 又是 x64 R2R 复合镜像，无法在 LA64 运行时加载（BadImageFormatException），
-      # 故完全绕开 vstest：用 xunit.runner.utility 构建极简自宿主执行器（纯 IL，可在 LA64 运行），
-      # 容器内以 LA64 运行时直接执行测试程序集；失败明细打印为 FAIL <用例>: <消息>
-      run: |
-        mkdir -p /tmp/selfhost
-        cat > /tmp/selfhost/xr.csproj <<'EOF'
-        <Project Sdk="Microsoft.NET.Sdk">
-          <PropertyGroup>
-            <OutputType>Exe</OutputType>
-            <TargetFramework>net10.0</TargetFramework>
-            <Nullable>disable</Nullable>
-            <LangVersion>latest</LangVersion>
-          </PropertyGroup>
-          <ItemGroup>
-            <PackageReference Include="xunit.runner.utility" Version="2.9.3" />
-          </ItemGroup>
-        </Project>
-        EOF
-        cat > /tmp/selfhost/Program.cs <<'EOF'
-        using System;
-        using System.IO;
-        using System.Threading;
-        using Xunit.Runners;
-
-        if (args.Length < 1)
-        {
-            Console.WriteLine("用法: xr <testAssembly.dll>");
-            return 2;
-        }
-
-        var path = Path.GetFullPath(args[0]);
-        var testDir = Path.GetDirectoryName(path)!;
-
-        // 无 AppDomain 模式下，xunit 以 Assembly.Load(名称) 装载测试程序集，
-        // 需要把测试输出目录挂到默认加载上下文的解析事件上
-        System.Runtime.Loader.AssemblyLoadContext.Default.Resolving += (ctx, name) =>
-        {
-            var file = Path.Combine(testDir, name.Name + ".dll");
-            return File.Exists(file) ? ctx.LoadFromAssemblyPath(file) : null;
-        };
-
-        var pass = 0;
-        var fail = 0;
-        var skip = 0;
-
-        using var runner = AssemblyRunner.WithoutAppDomain(path);
-        runner.OnDiscoveryComplete = info => Console.WriteLine($"DISCOVERED {info.TestCasesToRun}");
-        runner.OnTestStarting = info => Console.WriteLine($"START {info.TestDisplayName}");
-        runner.OnTestPassed = _ => Interlocked.Increment(ref pass);
-        runner.OnTestSkipped = _ => Interlocked.Increment(ref skip);
-        runner.OnTestFailed = info =>
-        {
-            Interlocked.Increment(ref fail);
-            Console.WriteLine($"FAIL {info.TestDisplayName}: {info.ExceptionMessage}");
-        };
-
-        var done = new ManualResetEventSlim(false);
-        runner.OnExecutionComplete = info =>
-        {
-            Console.WriteLine($"TOTAL pass={pass} fail={fail} skip={skip} time={info.ExecutionTime:n1}s");
-            done.Set();
-        };
-
-        runner.Start();
-        done.Wait();
-
-        return fail > 0 ? 1 : 0;
-        EOF
-        dotnet build /tmp/selfhost/xr.csproj -c Release --nologo
     - name: Build Test Assembly (host x64 SDK)
       # 龙芯 SDK 在 QEMU 下的 MSBuild 链路不稳，构建放宿主 x64 SDK（产出 RID 无关的 IL 与可移植 deps.json），
       # 容器内仅以 LA64 运行时执行测试
@@ -147,15 +77,14 @@ jobs:
       # 容器内不装 ICU（invariant 模式，测试无 culture 依赖，消除 apt 慢源卡点）；
       # DOTNET_EnableHWIntrinsic=0：QEMU 用户态对 LASX/LSX 指令覆盖不全，JIT 动态桩实测触发
       # Illegal instruction（ExecutionEngineException），关闭硬件内建以强制基线指令；
-      # 分段日志（[1/4]~[4/4] + 时间戳）与 DISCOVERED/START 进度行用于定位 QEMU 下的慢点；
-      # 自宿主执行器连同其依赖复制进测试输出目录，保证加载路径与 VSTest 一致
+      # xUnit v3 测试程序集自身就是 MTP 执行器，直接 dotnet XUnitTest.dll（无需 vstest / 自宿主加载器）；
+      # 分段日志（[1/3]~[3/3] + 时间戳）用于定位 QEMU 下的慢点
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
       run: |
         docker run --rm --platform linux/loong64 \
           -v "$PWD:/src" -w /src \
           -v "$HOME/la64:/opt/dotnet" \
-          -v "/tmp/selfhost/bin/Release/net10.0:/opt/selfhost:ro" \
           -e DOTNET_ROOT=/opt/dotnet \
           -e DOTNET_CLI_TELEMETRY_OPTOUT=1 \
           -e DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 \
@@ -163,12 +92,10 @@ jobs:
           lcr.loongnix.cn/debian:14-slim \
           sh -c '
             set -e
-            echo "[1/4] $(date +%T) dotnet --info"
+            echo "[1/3] $(date +%T) dotnet --info"
             /opt/dotnet/dotnet --info
-            echo "[2/4] $(date +%T) prepare test dir"
+            echo "[2/3] $(date +%T) run tests"
             cd /src/Bin/UnitTest/net10.0
-            cp /opt/selfhost/* .
-            echo "[3/4] $(date +%T) run tests"
-            timeout 30m /opt/dotnet/dotnet ./xr.dll ./XUnitTest.dll
-            echo "[4/4] $(date +%T) done"
+            timeout 30m /opt/dotnet/dotnet ./XUnitTest.dll
+            echo "[3/3] $(date +%T) done"
           '

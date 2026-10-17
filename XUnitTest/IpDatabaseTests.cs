@@ -7,20 +7,19 @@ using Xunit;
 namespace XUnitTest;
 
 /// <summary>IP数据库测试：用构造的最小数据库文件验证加载、索引遍历与二分检索</summary>
-public class IpDatabaseTests
+public class IpDatabaseTests : IClassFixture<IpDatabaseFixture>
 {
-    static IpDatabaseTests()
-    {
-        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-    }
+    readonly IpDatabaseFixture _fixture;
 
-    /// <summary>构造测试数据库文件</summary>
-    static String BuildFile()
+    public IpDatabaseTests(IpDatabaseFixture fixture) => _fixture = fixture;
+
+    static IpDatabaseTests() => Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+    /// <summary>构造自定义记录集的临时数据库文件</summary>
+    static String BuildFile(params TestDbBuilder.DbRecord[] records)
     {
-        var dir = Path.Combine(Path.GetTempPath(), "XUnitTest_" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(dir);
-        var file = Path.Combine(dir, "test.ip");
-        TestDbBuilder.Build(file, TestDbBuilder.DefaultRecords);
+        var file = Path.GetTempFileName();
+        TestDbBuilder.Build(file, records);
         return file;
     }
 
@@ -28,7 +27,7 @@ public class IpDatabaseTests
     public void SetFile_Head()
     {
         using var db = new IpDatabase();
-        db.SetFile(BuildFile());
+        db.SetFile(_fixture.File);
 
         Assert.Equal(8u, db.Start);
         Assert.Equal(8u + 3 * 7 - 1, db.End);
@@ -38,9 +37,8 @@ public class IpDatabaseTests
     [Fact(DisplayName = "SetFile 打开gz压缩库，自动解压到临时文件")]
     public void SetFile_Gz()
     {
-        var file = BuildFile();
-        var gz = file + ".gz";
-        TestDbBuilder.CompressGz(file, gz);
+        var gz = _fixture.File + ".gz";
+        TestDbBuilder.CompressGz(_fixture.File, gz);
 
         using var db = new IpDatabase();
         db.SetFile(gz);
@@ -53,7 +51,7 @@ public class IpDatabaseTests
     public void GetIndex_All()
     {
         using var db = new IpDatabase();
-        db.SetFile(BuildFile());
+        db.SetFile(_fixture.File);
 
         var (info0, area0, addr0) = db.GetIndex(0);
         Assert.Equal(0x00000000u, info0.Start);
@@ -79,7 +77,7 @@ public class IpDatabaseTests
     public void GetAddress_Start()
     {
         using var db = new IpDatabase();
-        db.SetFile(BuildFile());
+        db.SetFile(_fixture.File);
 
         var (area, addr) = db.GetAddress(0x00000000u);
         Assert.Equal("测试省A", area);
@@ -90,7 +88,7 @@ public class IpDatabaseTests
     public void GetAddress_Mid()
     {
         using var db = new IpDatabase();
-        db.SetFile(BuildFile());
+        db.SetFile(_fixture.File);
 
         var (area, addr) = db.GetAddress(0x00000164u); // 0.0.1.100
         Assert.Equal("测试省B", area);
@@ -101,19 +99,89 @@ public class IpDatabaseTests
     public void GetAddress_Redirect()
     {
         using var db = new IpDatabase();
-        db.SetFile(BuildFile());
+        db.SetFile(_fixture.File);
 
         var (area, addr) = db.GetAddress(0x00000264u); // 0.0.2.100
         Assert.Equal("测试省C", area);
         Assert.Equal("测试运营商C", addr);
     }
 
+    [Fact(DisplayName = "GetAddress 索引区间之外返回空且不死循环")]
+    public void GetAddress_OutOfRange()
+    {
+        using var db = new IpDatabase();
+        db.SetFile(_fixture.File);
+
+        // 大于末条记录结束IP
+        var (area1, addr1) = db.GetAddress(0xFFFFFFFFu);
+        Assert.Equal("", area1);
+        Assert.Equal("", addr1);
+
+        // 小于首条记录起始IP
+        var file = BuildFile(new TestDbBuilder.DbRecord(0x01000000u, 0x010000FFu, "测试省A", "测试运营商A", false));
+        try
+        {
+            using var db2 = new IpDatabase();
+            db2.SetFile(file);
+
+            var (area2, addr2) = db2.GetAddress(0x00FFFFFFu);
+            Assert.Equal("", area2);
+            Assert.Equal("", addr2);
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+    }
+
+    [Fact(DisplayName = "GetAddress 索引间隙返回空")]
+    public void GetAddress_Gap()
+    {
+        var file = BuildFile(
+            new TestDbBuilder.DbRecord(0x00000000u, 0x000000FFu, "测试省A", "测试运营商A", false),
+            new TestDbBuilder.DbRecord(0x00000200u, 0x000002FFu, "测试省C", "测试运营商C", false));
+        try
+        {
+            using var db = new IpDatabase();
+            db.SetFile(file);
+
+            var (area, addr) = db.GetAddress(0x00000180u);
+            Assert.Equal("", area);
+            Assert.Equal("", addr);
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+    }
+
     [Fact(DisplayName = "Dispose 重复销毁不抛异常")]
     public void Dispose_Twice()
     {
         var db = new IpDatabase();
-        db.SetFile(BuildFile());
+        db.SetFile(_fixture.File);
         db.Dispose();
         db.Dispose();
+    }
+}
+
+/// <summary>默认测试数据库夹具，整个测试类共享一份，避免每个用例重复落盘</summary>
+public sealed class IpDatabaseFixture : IDisposable
+{
+    /// <summary>数据库文件路径</summary>
+    public String File { get; }
+
+    public IpDatabaseFixture()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "XUnitTest_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        File = Path.Combine(dir, "test.ip");
+        TestDbBuilder.Build(File, TestDbBuilder.DefaultRecords);
+    }
+
+    public void Dispose()
+    {
+        var dir = Path.GetDirectoryName(File);
+        if (Directory.Exists(dir)) Directory.Delete(dir, true);
     }
 }

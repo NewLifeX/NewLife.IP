@@ -110,6 +110,29 @@ public class OnlineIpTests
         Assert.Equal("CN|北京|北京|None|CHINANET|0|0", addr);
     }
 
+    [Fact(DisplayName = "Parse 空字符串返回空")]
+    public void Parse_Empty()
+    {
+        var (area, addr) = OnlineIp.Parse("");
+        Assert.Equal("", area);
+        Assert.Equal("", addr);
+
+        var (area2, addr2) = OnlineIp.Parse(null);
+        Assert.Equal("", area2);
+        Assert.Equal("", addr2);
+    }
+
+    [Fact(DisplayName = "GetAddress IPAddress对象命中缓存不请求网络")]
+    public void GetAddress_IPAddress_Cache()
+    {
+        var cache = new MemoryCache();
+        cache.Set("OnlineIp:8.8.4.4", "测试省\t测试运营商", 3600);
+
+        var ip = new OnlineIp { Cache = cache, Expire = 3600 };
+
+        Assert.Equal("测试省 测试运营商", ip.GetAddress(System.Net.IPAddress.Parse("8.8.4.4")));
+    }
+
     [Fact(DisplayName = "BuildUrl 默认ip-api无Key")]
     public void BuildUrl_Default()
     {

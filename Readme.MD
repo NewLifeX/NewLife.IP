@@ -165,14 +165,15 @@ A: 预先放置合法体积 & 日期的 `ip.gz` 到数据目录，或设置只�
 
 ---
 ## 运行单元测试
-仓库包含 xUnit 测试工程 `XUnitTest`：
+仓库包含 xUnit v3 测试工程 `XUnitTest`（Microsoft.Testing.Platform，VS2026 直接支持进程内执行）：
 ```
-dotnet test
+dotnet test --project XUnitTest/XUnitTest.csproj
 ```
 主要验证：
 - IP/UInt32 互转正确性
 - 常见真实 IP 解析的区域一致性
 - 多线程并发解析稳定性
+- 构造库的边界行为（区间外、索引间隙、重定向记录）
 
 CI（push/PR 触发）在 win-x64 / linux-x64 / linux-arm64 / linux-la64（龙芯，QEMU）四大 RID 运行全量单测；另有 `AotSmoke` 工程做 NativeAOT 冒烟对照（见 `.github/workflows/`）。
 

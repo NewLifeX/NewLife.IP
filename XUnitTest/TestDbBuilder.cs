@@ -10,6 +10,8 @@ namespace XUnitTest;
 /// <remarks>直接使用 Stream 字节写入，避免 BinaryWriter.Write(Byte) 内部缓冲与手动 Position 混用导致字节错位</remarks>
 internal static class TestDbBuilder
 {
+    static TestDbBuilder() => Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
     /// <summary>测试记录定义</summary>
     public record DbRecord(UInt32 Start, UInt32 End, String Area, String Addr, Boolean Redirect);
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using NewLife;
 using NewLife.IP;
@@ -9,19 +8,24 @@ using Xunit;
 
 namespace XUnitTest;
 
-public class IpTests
+public class IpTests : IClassFixture<BigFileFixture>
 {
+    readonly BigFileFixture _fixture;
+
+    public IpTests(BigFileFixture fixture) => _fixture = fixture;
+
     static IpTests()
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         IpResolver.Register();
 
-        var addr = "39.144.10.35".IPToAddress();
+        // 数据文件由 XUnitTest.csproj 复制到输出目录，缺失时立即失败，
+        // 避免 Ip.Init 走联网下载白等 5 秒（历史实现此处固定休眠 9 秒）
+        var dataFile = Path.Combine(AppContext.BaseDirectory, "Data", "ip.gz");
+        if (!File.Exists(dataFile)) throw new FileNotFoundException($"测试数据缺失：{dataFile}", dataFile);
 
-        //#if DEBUG
-        // 大小写与 Ip.Init 的数据目录（Data）一致，Linux 下区分大小写
-        if (!"Data/ip.gz".AsFile().Exists) Thread.Sleep(9000);
-        //#endif
+        // 预热真实数据库，后续用例共享同一实例
+        _ = "39.144.10.35".IPToAddress();
     }
 
     [Fact]
@@ -91,29 +95,10 @@ public class IpTests
 
     #region 构造数据测试（不依赖真实数据库）
 
-    /// <summary>构造大于3MB的测试数据库文件，跳过 Ip.Init 下载逻辑</summary>
-    static String BuildBigFile()
-    {
-        var dir = Path.Combine(Path.GetTempPath(), "XUnitTest_" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(dir);
-        var file = Path.Combine(dir, "test.ip");
-        TestDbBuilder.Build(file, TestDbBuilder.DefaultRecords);
-        TestDbBuilder.Pad(file);
-        return file;
-    }
-
-    /// <summary>清理临时目录</summary>
-    static void Cleanup(String file)
-    {
-        var dir = Path.GetDirectoryName(file);
-        if (Directory.Exists(dir)) Directory.Delete(dir, true);
-    }
-
     [Fact(DisplayName = "Init 合法大文件返回True且幂等")]
     public void Init_Ok()
     {
-        var file = BuildBigFile();
-        var ip = new Ip { DbFile = file };
+        var ip = new Ip { DbFile = _fixture.File };
         try
         {
             Assert.True(ip.Init());
@@ -124,15 +109,13 @@ public class IpTests
         {
             // 释放 MMF 句柄，否则临时文件无法删除
             ip.Db?.Dispose();
-            Cleanup(file);
         }
     }
 
     [Fact(DisplayName = "GetAddress 字符串IP返回区域地址")]
     public void GetAddress_String()
     {
-        var file = BuildBigFile();
-        var ip = new Ip { DbFile = file };
+        var ip = new Ip { DbFile = _fixture.File };
         try
         {
             var (area, addr) = ip.GetAddress("0.0.1.100");
@@ -143,7 +126,22 @@ public class IpTests
         {
             // 释放 MMF 句柄，否则临时文件无法删除
             ip.Db?.Dispose();
-            Cleanup(file);
+        }
+    }
+
+    [Fact(DisplayName = "GetAddress 非法IP字符串按0.0.0.0处理")]
+    public void GetAddress_Invalid()
+    {
+        var ip = new Ip { DbFile = _fixture.File };
+        try
+        {
+            var (area, addr) = ip.GetAddress("not-an-ip");
+            Assert.Equal("测试省A", area);
+            Assert.Equal("测试运营商A", addr);
+        }
+        finally
+        {
+            ip.Db?.Dispose();
         }
     }
 
@@ -159,8 +157,7 @@ public class IpTests
     [Fact(DisplayName = "GetAddress IPAddress对象返回拼接字符串")]
     public void GetAddress_IPAddress()
     {
-        var file = BuildBigFile();
-        var ip = new Ip { DbFile = file };
+        var ip = new Ip { DbFile = _fixture.File };
         try
         {
             var rs = ip.GetAddress(System.Net.IPAddress.Parse("0.0.2.100"));
@@ -170,7 +167,6 @@ public class IpTests
         {
             // 释放 MMF 句柄，否则临时文件无法删除
             ip.Db?.Dispose();
-            Cleanup(file);
         }
     }
 
@@ -182,4 +178,26 @@ public class IpTests
     }
 
     #endregion
+}
+
+/// <summary>大于3MB的测试数据库夹具，整个测试类共享一份，避免每个用例重复构造</summary>
+public sealed class BigFileFixture : IDisposable
+{
+    /// <summary>数据库文件路径</summary>
+    public String File { get; }
+
+    public BigFileFixture()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "XUnitTest_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        File = Path.Combine(dir, "test.ip");
+        TestDbBuilder.Build(File, TestDbBuilder.DefaultRecords);
+        TestDbBuilder.Pad(File);
+    }
+
+    public void Dispose()
+    {
+        var dir = Path.GetDirectoryName(File);
+        if (Directory.Exists(dir)) Directory.Delete(dir, true);
+    }
 }
