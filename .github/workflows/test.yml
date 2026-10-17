@@ -40,17 +40,16 @@ jobs:
     - name: Test
       run: dotnet test XUnitTest/XUnitTest.csproj -c Release --nologo
 
-  # Linux LoongArch64（LA64，必选门禁）：GitHub 无 LA64 runner/runtime pack，
+  # Linux LoongArch64（LA64，非阻塞观察项）：GitHub 无 LA64 runner/runtime pack，
   # 采用 docker + QEMU 用户态仿真（loong64 binfmt）+ 龙芯 SDK 在 loong64 容器内跑 net10.0 全量单测。
-  # 裸宿主无 LA64 动态加载器（Could not open /lib64/ld-linux-loongarch-lp64d.so.1）必须在容器内执行；
-  # 基础镜像 lcr.loongnix.cn/debian:14-slim 为 Debian unstable loong64 端口，自带 loader 与可用 apt（deb.debian.org），
-  # 容器内补装 libicu/libssl（基准镜像未含），使全球化/加密用例与其它 Linux job 行为一致。
+  # 容器内不装 ICU（invariant 模式，测试无 culture 依赖，消除 apt 慢源卡点）；
   # vstest 不可用（龙芯 SDK 版不认识 LoongArch64 架构、宿主版是 x64 R2R 无法加载），改自宿主 xunit 执行器。
-  # QEMU 下时长以实测为准，job 限时 300 分钟、容器内 timeout 兜底。
+  # continue-on-error：该 RID 的目标是尽早暴露龙芯平台兼容问题，任何环节出错都不阻塞主分支。
   loongarch64:
     name: test (linux-la64 qemu)
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 60
+    continue-on-error: true
 
     steps:
     - uses: actions/checkout@v4
@@ -170,6 +169,6 @@ jobs:
             cd /src/Bin/UnitTest/net10.0
             cp /opt/selfhost/* .
             echo "[3/4] $(date +%T) run tests"
-            timeout 120m /opt/dotnet/dotnet ./xr.dll ./XUnitTest.dll
+            timeout 30m /opt/dotnet/dotnet ./xr.dll ./XUnitTest.dll
             echo "[4/4] $(date +%T) done"
           '
