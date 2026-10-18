@@ -1,0 +1,9 @@
+# 繁體中文譯文。鍵為英文源文，缺失時執行期回退英文。
+"CSV file not found.": "找不到CSV文件"
+"No valid records in the CSV file.": "CSV中沒有有效記錄"
+"Unable to find the IP database {0}": "無法找到IP數據庫{0}"
+"IP database: {0}": "IP數據庫：{0}"
+"IP database {0} was not found; downloading from {1}.": "沒有找到IP數據庫{0}，準備聯網獲取 {1}"
+"IP database {0} has expired; downloading an update from {1}.": "IP數據庫{0}已過期，準備聯網更新 {1}"
+"IP database downloaded successfully: {0}": "下載IP數據庫成功，文件：{0}"
+"Failed to download the IP database; the file does not exist: {0}": "下載IP數據庫失敗，文件不存在！{0}"

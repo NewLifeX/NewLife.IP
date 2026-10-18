@@ -2,6 +2,7 @@ using System.IO;
 using System.Text;
 using NewLife.IO;
 using NewLife.Log;
+using NewLife;
 
 namespace NewLife.IP;
 
@@ -23,7 +24,7 @@ public static class IpCsv
     {
         if (csvFile.IsNullOrEmpty()) throw new ArgumentNullException(nameof(csvFile));
         if (dbFile.IsNullOrEmpty()) throw new ArgumentNullException(nameof(dbFile));
-        if (!File.Exists(csvFile)) throw new FileNotFoundException("找不到CSV文件", csvFile);
+        if (!File.Exists(csvFile)) throw new FileNotFoundException(L.T("CSV file not found."), csvFile);
 
         // 读取CSV并解析记录
         var records = new List<DbRecord>();
@@ -52,7 +53,7 @@ public static class IpCsv
             }
         }
 
-        if (records.Count == 0) throw new InvalidOperationException("CSV中没有有效记录");
+        if (records.Count == 0) throw new InvalidOperationException(L.T("No valid records in the CSV file."));
 
         // 按起始IP排序，保证二分检索正确
         records.Sort((x, y) => x.Start.CompareTo(y.Start));

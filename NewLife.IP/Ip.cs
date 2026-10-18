@@ -2,6 +2,7 @@
 using System.Text;
 using NewLife.Log;
 using NewLife.Web;
+using NewLife;
 
 namespace NewLife.IP;
 
@@ -54,10 +55,10 @@ public class Ip
             ip = DbFile;
             if (!File.Exists(ip))
             {
-                XTrace.WriteLine("无法找到IP数据库{0}", ip);
+                XTrace.WriteLine(L.T("Unable to find the IP database {0}"), ip);
                 return false;
             }
-            XTrace.WriteLine("IP数据库：{0}", ip);
+            XTrace.WriteLine(L.T("IP database: {0}"), ip);
 
             try
             {
@@ -85,9 +86,9 @@ public class Ip
 
         var fi = ip.AsFile();
         if (fi == null || !fi.Exists)
-            XTrace.WriteLine("没有找到IP数据库{0}，准备联网获取 {1}", ip, url);
+            XTrace.WriteLine(L.T("IP database {0} was not found; downloading from {1}."), ip, url);
         else
-            XTrace.WriteLine("IP数据库{0}已过期，准备联网更新 {1}", ip, url);
+            XTrace.WriteLine(L.T("IP database {0} has expired; downloading an update from {1}."), ip, url);
 
         // 无法下载ip地址库时，不要抛出异常影响业务层
         try
@@ -101,7 +102,7 @@ public class Ip
 
             if (!file.IsNullOrEmpty() && File.Exists(file))
             {
-                XTrace.WriteLine("下载IP数据库成功，文件：{0}", file);
+                XTrace.WriteLine(L.T("IP database downloaded successfully: {0}"), file);
 
                 if (File.Exists(ip)) File.Delete(ip);
                 ip.EnsureDirectory(true);
@@ -115,7 +116,7 @@ public class Ip
                 return true;
             }
             else
-                XTrace.WriteLine("下载IP数据库失败，文件不存在！{0}", file);
+                XTrace.WriteLine(L.T("Failed to download the IP database; the file does not exist: {0}"), file);
         }
         catch (Exception ex)
         {
