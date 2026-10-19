@@ -1,0 +1,11 @@
+# Magyar 词表（hu）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"CSV file not found.": "A CSV-fájl nem található."
+"No valid records in the CSV file.": "Nincsenek érvényes rekordok a CSV-fájlban."
+"Unable to find the IP database {0}": "Az IP-adatbázis ({0}) nem található"
+"IP database: {0}": "IP-adatbázis: {0}"
+"IP database {0} was not found; downloading from {1}.": "Az IP-adatbázis ({0}) nem található; letöltés innen: {1}."
+"IP database {0} has expired; downloading an update from {1}.": "Az IP-adatbázis ({0}) lejárt; frissítés letöltése innen: {1}."
+"IP database downloaded successfully: {0}": "Az IP-adatbázis sikeresen letöltve: {0}"
+"Failed to download the IP database; the file does not exist: {0}": "Az IP-adatbázis letöltése nem sikerült; a fájl nem létezik: {0}"
+"IP record count: {0:n0}": "IP-rekordok száma: {0:n0}"
+"IP database conversion completed: {0:n0} records → {1}": "Az IP-adatbázis átalakítása befejeződött: {0:n0} rekord → {1}"

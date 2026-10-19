@@ -1,0 +1,11 @@
+# Nederlands 词表（nl）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"CSV file not found.": "CSV-bestand niet gevonden."
+"No valid records in the CSV file.": "Geen geldige records in het CSV-bestand."
+"Unable to find the IP database {0}": "Kan de IP-database {0} niet vinden"
+"IP database: {0}": "IP-database: {0}"
+"IP database {0} was not found; downloading from {1}.": "IP-database {0} is niet gevonden; downloaden van {1}."
+"IP database {0} has expired; downloading an update from {1}.": "IP-database {0} is verlopen; een update wordt gedownload van {1}."
+"IP database downloaded successfully: {0}": "IP-database succesvol gedownload: {0}"
+"Failed to download the IP database; the file does not exist: {0}": "Downloaden van de IP-database mislukt; het bestand bestaat niet: {0}"
+"IP record count: {0:n0}": "Aantal IP-records: {0:n0}"
+"IP database conversion completed: {0:n0} records → {1}": "Conversie van de IP-database voltooid: {0:n0} records → {1}"

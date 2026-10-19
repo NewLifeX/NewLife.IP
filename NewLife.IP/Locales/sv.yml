@@ -1,0 +1,11 @@
+# Svenska 词表（sv）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"CSV file not found.": "CSV-filen hittades inte."
+"No valid records in the CSV file.": "Det finns inga giltiga poster i CSV-filen."
+"Unable to find the IP database {0}": "Det gick inte att hitta IP-databasen {0}"
+"IP database: {0}": "IP-databas: {0}"
+"IP database {0} was not found; downloading from {1}.": "IP-databasen {0} hittades inte; laddar ned från {1}."
+"IP database {0} has expired; downloading an update from {1}.": "IP-databasen {0} har gått ut; laddar ned en uppdatering från {1}."
+"IP database downloaded successfully: {0}": "IP-databasen har laddats ned: {0}"
+"Failed to download the IP database; the file does not exist: {0}": "Det gick inte att ladda ned IP-databasen; filen finns inte: {0}"
+"IP record count: {0:n0}": "Antal IP-poster: {0:n0}"
+"IP database conversion completed: {0:n0} records → {1}": "Konvertering av IP-databas klar: {0:n0} poster → {1}"

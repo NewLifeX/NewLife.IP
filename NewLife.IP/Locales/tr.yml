@@ -1,0 +1,11 @@
+# Türkçe 词表（tr）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"CSV file not found.": "CSV dosyası bulunamadı."
+"No valid records in the CSV file.": "CSV dosyasında geçerli kayıt yok."
+"Unable to find the IP database {0}": "IP veritabanı {0} bulunamadı"
+"IP database: {0}": "IP veritabanı: {0}"
+"IP database {0} was not found; downloading from {1}.": "IP veritabanı {0} bulunamadı; {1} adresinden indiriliyor."
+"IP database {0} has expired; downloading an update from {1}.": "IP veritabanı {0} süresi doldu; {1} adresinden güncelleme indiriliyor."
+"IP database downloaded successfully: {0}": "IP veritabanı başarıyla indirildi: {0}"
+"Failed to download the IP database; the file does not exist: {0}": "IP veritabanı indirilemedi; dosya mevcut değil: {0}"
+"IP record count: {0:n0}": "IP kayıt sayısı: {0:n0}"
+"IP database conversion completed: {0:n0} records → {1}": "IP veritabanı dönüşümü tamamlandı: {0:n0} kayıt → {1}"

@@ -1,0 +1,11 @@
+# Čeština 词表（cs）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"CSV file not found.": "Soubor CSV nebyl nalezen."
+"No valid records in the CSV file.": "V souboru CSV nejsou žádné platné záznamy."
+"Unable to find the IP database {0}": "Databázi IP {0} nelze nalézt"
+"IP database: {0}": "Databáze IP: {0}"
+"IP database {0} was not found; downloading from {1}.": "Databáze IP {0} nebyla nalezena; stahuje se z {1}."
+"IP database {0} has expired; downloading an update from {1}.": "Platnost databáze IP {0} vypršela; stahuje se aktualizace z {1}."
+"IP database downloaded successfully: {0}": "Databáze IP byla úspěšně stažena: {0}"
+"Failed to download the IP database; the file does not exist: {0}": "Stažení databáze IP se nezdařilo; soubor neexistuje: {0}"
+"IP record count: {0:n0}": "Počet záznamů IP: {0:n0}"
+"IP database conversion completed: {0:n0} records → {1}": "Převod databáze IP dokončen: {0:n0} záznamů → {1}"

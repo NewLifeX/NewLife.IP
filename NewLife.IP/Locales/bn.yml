@@ -1,0 +1,11 @@
+# বাংলা 词表（bn）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"CSV file not found.": "CSV ফাইল পাওয়া যায়নি।"
+"No valid records in the CSV file.": "CSV ফাইলে কোনো বৈধ রেকর্ড নেই।"
+"Unable to find the IP database {0}": "IP ডেটাবেস {0} পাওয়া যায়নি"
+"IP database: {0}": "IP ডেটাবেস: {0}"
+"IP database {0} was not found; downloading from {1}.": "IP ডেটাবেস {0} পাওয়া যায়নি; {1} থেকে ডাউনলোড করা হচ্ছে।"
+"IP database {0} has expired; downloading an update from {1}.": "IP ডেটাবেস {0} এর মেয়াদ শেষ হয়েছে; {1} থেকে আপডেট ডাউনলোড করা হচ্ছে।"
+"IP database downloaded successfully: {0}": "IP ডেটাবেস সফলভাবে ডাউনলোড হয়েছে: {0}"
+"Failed to download the IP database; the file does not exist: {0}": "IP ডেটাবেস ডাউনলোড করতে ব্যর্থ হয়েছে; ফাইলটি বিদ্যমান নেই: {0}"
+"IP record count: {0:n0}": "IP রেকর্ড সংখ্যা: {0:n0}"
+"IP database conversion completed: {0:n0} records → {1}": "IP ডেটাবেস রূপান্তর সম্পন্ন হয়েছে: {0:n0} রেকর্ড → {1}"

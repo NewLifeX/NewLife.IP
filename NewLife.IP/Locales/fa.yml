@@ -1,0 +1,11 @@
+# فارسی 词表（fa）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"CSV file not found.": "فایل CSV پیدا نشد."
+"No valid records in the CSV file.": "هیچ رکورد معتبری در فایل CSV وجود ندارد."
+"Unable to find the IP database {0}": "پایگاه داده IP {0} پیدا نشد"
+"IP database: {0}": "پایگاه داده IP: {0}"
+"IP database {0} was not found; downloading from {1}.": "پایگاه داده IP {0} پیدا نشد؛ در حال دانلود از {1}."
+"IP database {0} has expired; downloading an update from {1}.": "پایگاه داده IP {0} منقضی شده است؛ در حال دانلود به‌روزرسانی از {1}."
+"IP database downloaded successfully: {0}": "پایگاه داده IP با موفقیت دانلود شد: {0}"
+"Failed to download the IP database; the file does not exist: {0}": "دانلود پایگاه داده IP ناموفق بود؛ فایل وجود ندارد: {0}"
+"IP record count: {0:n0}": "تعداد رکوردهای IP: {0:n0}"
+"IP database conversion completed: {0:n0} records → {1}": "تبدیل پایگاه داده IP کامل شد: {0:n0} رکورد → {1}"
