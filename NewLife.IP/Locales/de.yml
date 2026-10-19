@@ -7,3 +7,5 @@
 "IP database {0} has expired; downloading an update from {1}.": "Die IP-Datenbank {0} ist abgelaufen; ein Update wird von {1} heruntergeladen."
 "IP database downloaded successfully: {0}": "IP-Datenbank erfolgreich heruntergeladen: {0}"
 "Failed to download the IP database; the file does not exist: {0}": "Herunterladen der IP-Datenbank fehlgeschlagen; die Datei existiert nicht: {0}"
+"IP record count: {0:n0}": "Anzahl der IP-Datensätze: {0:n0}"
+"IP database conversion completed: {0:n0} records → {1}": "IP-Datenbankkonvertierung abgeschlossen: {0:n0} Datensätze → {1}"

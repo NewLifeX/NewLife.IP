@@ -7,3 +7,5 @@
 "IP database {0} has expired; downloading an update from {1}.": "Срок действия базы данных IP {0} истёк; загрузка обновления из {1}."
 "IP database downloaded successfully: {0}": "База данных IP успешно загружена: {0}"
 "Failed to download the IP database; the file does not exist: {0}": "Не удалось загрузить базу данных IP; файл не существует: {0}"
+"IP record count: {0:n0}": "Количество записей IP: {0:n0}"
+"IP database conversion completed: {0:n0} records → {1}": "Преобразование базы данных IP завершено: {0:n0} записей → {1}"

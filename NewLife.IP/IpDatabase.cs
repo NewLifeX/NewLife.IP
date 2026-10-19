@@ -17,6 +17,13 @@ public class IpDatabase : IDisposable
     /// <summary>记录数</summary>
     public UInt32 Count { get; private set; }
 
+    /// <summary>日志对象。默认 <see cref="XTrace.Log"/>，设为 <see cref="Logger.Null"/> 可关闭日志</summary>
+    public ILog Log { get => _log ??= XTrace.Log; set => _log = value; }
+
+    /// <summary>日志前缀。前缀在消息翻译之后拼接，默认“[IpDatabase] ”</summary>
+    public String LogPrefix { get; set; } = "[IpDatabase] ";
+
+    private ILog _log;
     MemoryMappedFile _mmf;
     MemoryMappedViewAccessor _view;
     String _tempFile;
@@ -77,7 +84,7 @@ public class IpDatabase : IDisposable
         End = view.ReadUInt32(4);
         Count = (End - Start) / 7u + 1;
 
-        XTrace.WriteLine("IP记录数：{0:n0}", Count);
+        Log?.InfoPrefixed(LogPrefix, "IP record count: {0:n0}", Count);
 
         return this;
     }

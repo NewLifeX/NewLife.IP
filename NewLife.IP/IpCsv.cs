@@ -15,12 +15,22 @@ namespace NewLife.IP;
 /// </remarks>
 public static class IpCsv
 {
+    private const String LogPrefix = "[IpCsv] ";
+
     /// <summary>转换DB-IP CSV到纯真兼容数据库文件</summary>
     /// <param name="csvFile">DB-IP CSV文件路径</param>
     /// <param name="dbFile">输出数据库文件路径</param>
     /// <returns>写入的记录数</returns>
     /// <remarks>CSV 需包含表头行；自动跳过表头、非法 IP 行与空区域行。</remarks>
-    public static Int32 Convert(String csvFile, String dbFile)
+    public static Int32 Convert(String csvFile, String dbFile) => Convert(csvFile, dbFile, null);
+
+    /// <summary>转换DB-IP CSV到纯真兼容数据库文件</summary>
+    /// <param name="csvFile">DB-IP CSV文件路径</param>
+    /// <param name="dbFile">输出数据库文件路径</param>
+    /// <param name="log">日志对象。为空时使用 <see cref="XTrace.Log"/></param>
+    /// <returns>写入的记录数</returns>
+    /// <remarks>CSV 需包含表头行；自动跳过表头、非法 IP 行与空区域行。</remarks>
+    public static Int32 Convert(String csvFile, String dbFile, ILog log)
     {
         if (csvFile.IsNullOrEmpty()) throw new ArgumentNullException(nameof(csvFile));
         if (dbFile.IsNullOrEmpty()) throw new ArgumentNullException(nameof(dbFile));
@@ -60,7 +70,7 @@ public static class IpCsv
 
         WriteDbFile(dbFile, records);
 
-        XTrace.WriteLine("IP数据库转换完成：{0:n0} 条记录 → {1}", records.Count, dbFile);
+        (log ?? XTrace.Log).InfoPrefixed(LogPrefix, "IP database conversion completed: {0:n0} records → {1}", records.Count, dbFile);
 
         return records.Count;
     }

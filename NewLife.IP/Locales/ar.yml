@@ -7,3 +7,5 @@
 "IP database {0} has expired; downloading an update from {1}.": "انتهت صلاحية قاعدة بيانات IP {0}؛ جارٍ تنزيل تحديث من {1}."
 "IP database downloaded successfully: {0}": "تم تنزيل قاعدة بيانات IP بنجاح: {0}"
 "Failed to download the IP database; the file does not exist: {0}": "فشل تنزيل قاعدة بيانات IP؛ الملف غير موجود: {0}"
+"IP record count: {0:n0}": "عدد سجلات IP: {0:n0}"
+"IP database conversion completed: {0:n0} records → {1}": "اكتمل تحويل قاعدة بيانات IP: {0:n0} سجل → {1}"

@@ -7,3 +7,5 @@
 "IP database {0} has expired; downloading an update from {1}.": "IP データベース {0} の有効期限が切れています。{1} から更新をダウンロードしています。"
 "IP database downloaded successfully: {0}": "IP データベースをダウンロードしました: {0}"
 "Failed to download the IP database; the file does not exist: {0}": "IP データベースのダウンロードに失敗しました。ファイルが存在しません: {0}"
+"IP record count: {0:n0}": "IP レコード数: {0:n0}"
+"IP database conversion completed: {0:n0} records → {1}": "IP データベースの変換が完了しました: {0:n0} レコード → {1}"

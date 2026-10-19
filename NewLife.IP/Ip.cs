@@ -10,12 +10,19 @@ namespace NewLife.IP;
 public class Ip
 {
     private IpDatabase _zip;
+    private ILog _log;
 
     /// <summary>数据文件</summary>
     public String DbFile { get; set; } = "";
 
     /// <summary>数据库实例</summary>
     public IpDatabase Db => _zip;
+
+    /// <summary>日志对象。默认 <see cref="XTrace.Log"/>，设为 <see cref="Logger.Null"/> 可关闭日志</summary>
+    public ILog Log { get => _log ??= XTrace.Log; set => _log = value; }
+
+    /// <summary>日志前缀。前缀在消息翻译之后拼接，默认“[IP] ”</summary>
+    public String LogPrefix { get; set; } = "[IP] ";
 
     static Ip()
     {
@@ -51,14 +58,14 @@ public class Ip
                 task.Wait(5_000);
             }
 
-            var zip = new IpDatabase();
+            var zip = new IpDatabase { Log = Log, LogPrefix = LogPrefix };
             ip = DbFile;
             if (!File.Exists(ip))
             {
-                XTrace.WriteLine(L.T("Unable to find the IP database {0}"), ip);
+                Log?.InfoPrefixed(LogPrefix, "Unable to find the IP database {0}", ip);
                 return false;
             }
-            XTrace.WriteLine(L.T("IP database: {0}"), ip);
+            Log?.InfoPrefixed(LogPrefix, "IP database: {0}", ip);
 
             try
             {
@@ -69,7 +76,7 @@ public class Ip
             catch (Exception ex)
             {
                 _inited = false;
-                XTrace.WriteException(ex);
+                Log?.ErrorPrefixed(LogPrefix, "{0}", ex);
 
                 return false;
             }
@@ -86,9 +93,9 @@ public class Ip
 
         var fi = ip.AsFile();
         if (fi == null || !fi.Exists)
-            XTrace.WriteLine(L.T("IP database {0} was not found; downloading from {1}."), ip, url);
+            Log?.InfoPrefixed(LogPrefix, "IP database {0} was not found; downloading from {1}.", ip, url);
         else
-            XTrace.WriteLine(L.T("IP database {0} has expired; downloading an update from {1}."), ip, url);
+            Log?.InfoPrefixed(LogPrefix, "IP database {0} has expired; downloading an update from {1}.", ip, url);
 
         // 无法下载ip地址库时，不要抛出异常影响业务层
         try
@@ -96,13 +103,13 @@ public class Ip
             var client = new WebClientX
             {
                 Timeout = 60_000,
-                Log = XTrace.Log
+                Log = Log
             };
             var file = client.DownloadLink(url, "ip.gz", Path.GetTempPath());
 
             if (!file.IsNullOrEmpty() && File.Exists(file))
             {
-                XTrace.WriteLine(L.T("IP database downloaded successfully: {0}"), file);
+                Log?.InfoPrefixed(LogPrefix, "IP database downloaded successfully: {0}", file);
 
                 if (File.Exists(ip)) File.Delete(ip);
                 ip.EnsureDirectory(true);
@@ -116,11 +123,11 @@ public class Ip
                 return true;
             }
             else
-                XTrace.WriteLine(L.T("Failed to download the IP database; the file does not exist: {0}"), file);
+                Log?.InfoPrefixed(LogPrefix, "Failed to download the IP database; the file does not exist: {0}", file);
         }
         catch (Exception ex)
         {
-            XTrace.WriteException(ex);
+            Log?.ErrorPrefixed(LogPrefix, "{0}", ex);
         }
 
         return false;

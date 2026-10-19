@@ -31,6 +31,13 @@ public class OnlineIp : IIPResolver
     /// <summary>缓存过期秒数。默认24小时，0表示不缓存</summary>
     public Int32 Expire { get; set; } = 24 * 3600;
 
+    /// <summary>日志对象。默认 <see cref="XTrace.Log"/>，设为 <see cref="Logger.Null"/> 可关闭日志</summary>
+    public ILog Log { get => _log ??= XTrace.Log; set => _log = value; }
+
+    /// <summary>日志前缀。前缀在消息翻译之后拼接，默认“[OnlineIp] ”</summary>
+    public String LogPrefix { get; set; } = "[OnlineIp] ";
+
+    private ILog _log;
     private WebClientX _client;
     #endregion
 
@@ -95,7 +102,7 @@ public class OnlineIp : IIPResolver
     {
         try
         {
-            var client = _client ??= new WebClientX { Timeout = Timeout, Log = XTrace.Log };
+            var client = _client ??= new WebClientX { Timeout = Timeout, Log = Log };
             var json = client.GetHtml(BuildUrl(ip));
 
             return Parse(json);
@@ -103,7 +110,7 @@ public class OnlineIp : IIPResolver
         catch (Exception ex)
         {
             // 在线查询失败不抛异常，返回空
-            XTrace.WriteException(ex);
+            Log?.ErrorPrefixed(LogPrefix, "{0}", ex);
             return ("", "");
         }
     }
