@@ -281,23 +281,23 @@ return fail > 0 ? 1 : 0;
 /// <summary>捕获日志消息的测试日志器</summary>
 sealed class CapturingLog : ILog
 {
-    private String? _last;
+    private String _last;
 
     public Boolean Enable { get; set; } = true;
 
     public LogLevel Level { get; set; } = LogLevel.All;
 
-    public String? Last => _last;
+    public String Last => _last;
 
-    public void Write(LogLevel level, String format, params Object?[] args) => _last = args != null && args.Length > 0 ? String.Format(format, args) : format;
+    public void Write(LogLevel level, String format, params Object[] args) => _last = args != null && args.Length > 0 ? String.Format(format, args) : format;
 
-    public void Debug(String format, params Object?[] args) => Write(LogLevel.Debug, format, args);
+    public void Debug(String format, params Object[] args) => Write(LogLevel.Debug, format, args);
 
-    public void Info(String format, params Object?[] args) => Write(LogLevel.Info, format, args);
+    public void Info(String format, params Object[] args) => Write(LogLevel.Info, format, args);
 
-    public void Warn(String format, params Object?[] args) => Write(LogLevel.Warn, format, args);
+    public void Warn(String format, params Object[] args) => Write(LogLevel.Warn, format, args);
 
-    public void Error(String format, params Object?[] args) => Write(LogLevel.Error, format, args);
+    public void Error(String format, params Object[] args) => Write(LogLevel.Error, format, args);
 
-    public void Fatal(String format, params Object?[] args) => Write(LogLevel.Fatal, format, args);
+    public void Fatal(String format, params Object[] args) => Write(LogLevel.Fatal, format, args);
 }
