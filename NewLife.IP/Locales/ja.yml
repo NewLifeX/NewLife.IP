@@ -1,0 +1,9 @@
+# 日本語 词表（ja）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"CSV file not found.": "CSV ファイルが見つかりません。"
+"No valid records in the CSV file.": "CSV ファイルに有効なレコードがありません。"
+"Unable to find the IP database {0}": "IP データベース {0} が見つかりません"
+"IP database: {0}": "IP データベース: {0}"
+"IP database {0} was not found; downloading from {1}.": "IP データベース {0} が見つかりません。{1} からダウンロードしています。"
+"IP database {0} has expired; downloading an update from {1}.": "IP データベース {0} の有効期限が切れています。{1} から更新をダウンロードしています。"
+"IP database downloaded successfully: {0}": "IP データベースをダウンロードしました: {0}"
+"Failed to download the IP database; the file does not exist: {0}": "IP データベースのダウンロードに失敗しました。ファイルが存在しません: {0}"

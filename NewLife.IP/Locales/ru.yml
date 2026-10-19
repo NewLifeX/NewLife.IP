@@ -1,0 +1,9 @@
+# Русский 词表（ru）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"CSV file not found.": "Файл CSV не найден."
+"No valid records in the CSV file.": "В файле CSV нет действительных записей."
+"Unable to find the IP database {0}": "Не удалось найти базу данных IP {0}"
+"IP database: {0}": "База данных IP: {0}"
+"IP database {0} was not found; downloading from {1}.": "База данных IP {0} не найдена; загрузка из {1}."
+"IP database {0} has expired; downloading an update from {1}.": "Срок действия базы данных IP {0} истёк; загрузка обновления из {1}."
+"IP database downloaded successfully: {0}": "База данных IP успешно загружена: {0}"
+"Failed to download the IP database; the file does not exist: {0}": "Не удалось загрузить базу данных IP; файл не существует: {0}"

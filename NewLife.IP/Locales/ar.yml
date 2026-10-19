@@ -1,0 +1,9 @@
+# العربية 词表（ar）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"CSV file not found.": "لم يتم العثور على ملف CSV."
+"No valid records in the CSV file.": "لا توجد سجلات صالحة في ملف CSV."
+"Unable to find the IP database {0}": "تعذّر العثور على قاعدة بيانات IP {0}"
+"IP database: {0}": "قاعدة بيانات IP: {0}"
+"IP database {0} was not found; downloading from {1}.": "لم يتم العثور على قاعدة بيانات IP {0}؛ جارٍ التنزيل من {1}."
+"IP database {0} has expired; downloading an update from {1}.": "انتهت صلاحية قاعدة بيانات IP {0}؛ جارٍ تنزيل تحديث من {1}."
+"IP database downloaded successfully: {0}": "تم تنزيل قاعدة بيانات IP بنجاح: {0}"
+"Failed to download the IP database; the file does not exist: {0}": "فشل تنزيل قاعدة بيانات IP؛ الملف غير موجود: {0}"

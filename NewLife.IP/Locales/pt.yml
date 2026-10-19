@@ -1,0 +1,9 @@
+# Português 词表（pt）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"CSV file not found.": "Arquivo CSV não encontrado."
+"No valid records in the CSV file.": "Nenhum registro válido no arquivo CSV."
+"Unable to find the IP database {0}": "Não foi possível encontrar o banco de dados de IP {0}"
+"IP database: {0}": "Banco de dados de IP: {0}"
+"IP database {0} was not found; downloading from {1}.": "O banco de dados de IP {0} não foi encontrado; baixando de {1}."
+"IP database {0} has expired; downloading an update from {1}.": "O banco de dados de IP {0} expirou; baixando uma atualização de {1}."
+"IP database downloaded successfully: {0}": "Banco de dados de IP baixado com sucesso: {0}"
+"Failed to download the IP database; the file does not exist: {0}": "Falha ao baixar o banco de dados de IP; o arquivo não existe: {0}"
