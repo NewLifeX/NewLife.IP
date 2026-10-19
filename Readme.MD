@@ -108,6 +108,26 @@ var (area, addr) = online.GetAddress("116.234.91.199"); // area=中国–上海�
 | `IpResolver` | 实现 `NewLife.Net.IIPResolver` | 可注入生态组件统一解析 |
 | `OnlineIp` | 在线 API 解析器（默认 ip-api.com） | 含缓存与容错，`IpResolver.Online` 切换 |
 | `IpCsv` | DB-IP CSV → 纯真格式转换器 | 扩展数据源（CORE-5） |
+
+---
+## 日志与本地化 (Logging & Localization)
+```csharp
+using NewLife;
+using NewLife.Log;
+using System.Globalization;
+
+var ip = new Ip
+{
+    Log = myLogger,          // 任意 ILog；默认 XTrace.Log，Logger.Null 可关闭
+    LogPrefix = "[IP] ",     // 前缀在消息翻译之后拼接
+};
+Localization.Culture = new CultureInfo("zh-CN");     // 异常与界面文案
+Localization.LogCulture = new CultureInfo("zh-CN");  // 日志语言（为空时跟随 Culture）
+```
+- 内置 10 种语言词表（英文兜底），编译期生成、AOT 安全；缺失译文自动回退英文。
+- 日志统一走 `InfoPrefixed` / `ErrorPrefixed`，前缀不参与查表，动态实例名不会导致译文失效。
+- 详见 [多语言本地化](Doc/多语言本地化.md)。
+
 ---
 ## 数据文件与更新机制
 - 默认文件名：`ip.gz`，放置于 `Setting.Current.DataPath`（来自 `NewLife.Core` 配置体系）
