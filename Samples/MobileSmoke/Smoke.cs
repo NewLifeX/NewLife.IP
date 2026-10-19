@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using NewLife;
 
@@ -54,6 +55,33 @@ public static class Smoke
             finally
             {
                 Localization.Culture = oldCulture;
+            }
+        });
+        Check("IpCsv_Multilingual", () =>
+        {
+            var dir = Path.Combine(Path.GetTempPath(), "smoke-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            try
+            {
+                // 覆盖 GB18030 自动注册、非中文地名与超过 64 字节的长文本
+                var csv = Path.Combine(dir, "dbip.csv");
+                var dbFile = Path.Combine(dir, "ip.db");
+                var longName = "中国–" + new String('北', 40) + "–São Paulo–القاهرة–😀";
+                File.WriteAllText(csv, "start_ip,end_ip,country_code,country_name,state_prov,district,city\n" +
+                    "1.0.0.0,1.0.0.255,BR,Brazil,São Paulo,São Paulo,São Paulo\n" +
+                    "2.0.0.0,2.0.0.255,CN,China,Beijing,Beijing," + longName + "\n", Encoding.UTF8);
+
+                if (NewLife.IP.IpCsv.Convert(csv, dbFile) != 2) throw new Exception("count");
+
+                using var db = new NewLife.IP.IpDatabase().SetFile(dbFile);
+                var br = db.GetAddress(NewLife.IP.IpHelper.ToUInt32IP("1.0.0.10")).area;
+                if (br != "Brazil–São Paulo–São Paulo–São Paulo") throw new Exception(br);
+                var cn = db.GetAddress(NewLife.IP.IpHelper.ToUInt32IP("2.0.0.10")).area;
+                if (cn != "China–Beijing–Beijing–" + longName) throw new Exception(cn);
+            }
+            finally
+            {
+                Directory.Delete(dir, true);
             }
         });
         var dir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);

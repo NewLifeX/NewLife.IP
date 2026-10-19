@@ -158,7 +158,7 @@ public class IpDatabaseTests : IClassFixture<IpDatabaseFixture>
     [Fact(DisplayName = "GetAddress 多语言长文本不截断")]
     public void GetAddress_MultilingualLongText()
     {
-        var area = "中国–" + new String('北', 40) + "–São Paulo–القاهرة";
+        var area = "中国–" + new String('北', 40) + "–São Paulo–القاهرة–😀";
         var addr = "运营商–São Paulo–القاهرة";
         var file = BuildFile(new TestDbBuilder.DbRecord(0x03000000u, 0x030000FFu, area, addr, false));
         try

@@ -128,6 +128,27 @@ public class LocalizationTests : IClassFixture<BigFileFixture>
         });
     }
 
+    [Theory(DisplayName = "区域变体回退到基础语言")]
+    [InlineData("fr-CA", "Base de données IP")]
+    [InlineData("pt-BR", "Banco de dados de IP")]
+    [InlineData("es-MX", "Base de datos de IP")]
+    [InlineData("de-AT", "IP-Datenbank")]
+    [InlineData("zh-SG", "IP数据库")]
+    [InlineData("zh-HK", "IP數據庫")]
+    [InlineData("iw-IL", "מסד נתונים IP")]
+    [InlineData("in-ID", "Basis data IP")]
+    [InlineData("no-NO", "IP-database")]
+    [InlineData("mo-MD", "Baza de date IP")]
+    public void Translate_RegionVariants(String culture, String expected)
+    {
+        RequireCulture(culture);
+
+        WithCulture(new CultureInfo(culture), null, () =>
+        {
+            Assert.Contains(expected, Localization.Translate("IP database: {0}", "x"));
+        });
+    }
+
     [Fact(DisplayName = "未设置 Culture 时跟随 CurrentUICulture")]
     public void Translate_FollowsCurrentUICulture()
     {
@@ -169,6 +190,7 @@ public class LocalizationTests : IClassFixture<BigFileFixture>
         {
             "zh-Hans", "zh-Hant", "ar", "bn", "cs", "da", "de", "el", "es", "fa", "fi", "fr", "he", "hi",
             "hu", "id", "it", "ja", "ko", "ms", "nb", "nl", "pl", "pt", "ro", "ru", "sv", "th", "tr", "uk", "vi",
+            "iw", "in", "no", "mo",
         };
 
         foreach (var name in cultures)
@@ -181,6 +203,85 @@ public class LocalizationTests : IClassFixture<BigFileFixture>
                 {
                     var text = args.Length == 0 ? Localization.Translate(key) : Localization.Translate(key, args);
                     Assert.NotEqual(key, text);
+                }
+            });
+        }
+    }
+
+    [Fact(DisplayName = "全部语言的前缀日志均完成翻译")]
+    public void LogPrefixed_AllLocales()
+    {
+        var cultures = new[]
+        {
+            "zh-Hans", "zh-Hant", "ar", "bn", "cs", "da", "de", "el", "es", "fa", "fi", "fr", "he", "hi",
+            "hu", "id", "it", "ja", "ko", "ms", "nb", "nl", "pl", "pt", "ro", "ru", "sv", "th", "tr", "uk", "vi",
+            "iw", "in", "no", "mo",
+        };
+
+        foreach (var name in cultures)
+        {
+            RequireCulture(name);
+
+            // UI 语言固定英文，日志语言逐一切换，验证 LogCulture 对全部语言生效
+            WithCulture(new CultureInfo("en-US"), new CultureInfo(name), () =>
+            {
+                var log = new CapturingLog();
+
+                log.InfoPrefixed("[X] ", "IP database: {0}", "x");
+                Assert.StartsWith("[X] ", log.Last);
+                Assert.NotEqual("[X] IP database: x", log.Last);
+
+                log.ErrorPrefixed("[X] ", "IP record count: {0:n0}", 5);
+                Assert.StartsWith("[X] ", log.Last);
+                Assert.NotEqual("[X] IP record count: 5", log.Last);
+            });
+        }
+    }
+
+    [Fact(DisplayName = "内置 Logger 分支按日志语言翻译")]
+    public void Logger_Format_Translate()
+    {
+        RequireCulture("en-US", "zh-CN");
+
+        WithCulture(new CultureInfo("en-US"), new CultureInfo("zh-CN"), () =>
+        {
+            var logger = new CapturingLogger();
+
+            logger.Info("IP database: {0}", "x");
+            Assert.Equal("IP数据库：x", logger.Last);
+
+            logger.Error("IP record count: {0:n0}", 5);
+            Assert.Equal("IP记录数：5", logger.Last);
+
+            logger.InfoPrefixed("[X] ", "IP database: {0}", "x");
+            Assert.Equal("[X] IP数据库：x", logger.Last);
+        });
+    }
+
+    [Fact(DisplayName = "全部语言的异常消息均完成翻译")]
+    public void Translate_Exception_AllLocales()
+    {
+        var cultures = new[]
+        {
+            "zh-Hans", "zh-Hant", "ar", "bn", "cs", "da", "de", "el", "es", "fa", "fi", "fr", "he", "hi",
+            "hu", "id", "it", "ja", "ko", "ms", "nb", "nl", "pl", "pt", "ro", "ru", "sv", "th", "tr", "uk", "vi",
+            "iw", "in", "no", "mo",
+        };
+
+        foreach (var name in cultures)
+        {
+            RequireCulture(name);
+
+            WithCulture(new CultureInfo(name), null, () =>
+            {
+                try
+                {
+                    IpCsv.Convert("missing.csv", "missing.ip");
+                    throw new Exception("应当抛出 FileNotFoundException");
+                }
+                catch (FileNotFoundException ex)
+                {
+                    Assert.DoesNotContain("CSV file not found.", ex.Message);
                 }
             });
         }
@@ -308,6 +409,16 @@ public class LocalizationTests : IClassFixture<BigFileFixture>
             }
         });
     }
+}
+
+/// <summary>捕获日志消息的内置 Logger 实现，验证 Logger.Format 翻译分支</summary>
+public sealed class CapturingLogger : Logger
+{
+    public CapturingLogger() => Level = LogLevel.All;
+
+    public String Last { get; private set; }
+
+    protected override void OnWrite(LogLevel level, String format, Object[] args) => Last = Format(format, args);
 }
 
 /// <summary>捕获日志消息的测试日志器</summary>

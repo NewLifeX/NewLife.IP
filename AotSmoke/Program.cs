@@ -16,7 +16,7 @@ using NewLife.Net;
 using XUnitTest;
 
 try { Console.OutputEncoding = Encoding.UTF8; } catch { }
-try { Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); } catch { }
+// 注意：此处故意不注册 CodePagesEncodingProvider，由库在首次使用 IpCsv/IpDatabase 时自动注册
 
 Console.WriteLine("=== NewLife.IP AOT smoke ===");
 Console.WriteLine($"framework={RuntimeInformation.FrameworkDescription}");
@@ -45,6 +45,26 @@ Console.WriteLine($"[diag] temp={temp}");
 
 try
 {
+    // ============ 运行时多语言编码（不预注册代码页，验证库自动注册 + GB18030 无损） ============
+
+    Run("IpCsv_AutoRegister", () =>
+    {
+        var csvFile = Path.Combine(temp, "auto.csv");
+        var dbFile = Path.Combine(temp, "auto.ip");
+        var longName = "中国–" + new String('北', 40) + "–São Paulo–القاهرة–😀";
+        File.WriteAllText(csvFile, "start_ip,end_ip,country_code,country_name,state_prov,district,city\n" +
+            "1.0.0.0,1.0.0.255,BR,Brazil,São Paulo,São Paulo,São Paulo\n" +
+            "2.0.0.0,2.0.0.255,CN,China,Beijing,Beijing," + longName + "\n", new UTF8Encoding(false));
+
+        if (IpCsv.Convert(csvFile, dbFile) != 2) throw new Exception("count");
+
+        using var db = new IpDatabase().SetFile(dbFile);
+        var (br, _) = db.GetAddress("1.0.0.10".ToUInt32IP());
+        if (br != "Brazil–São Paulo–São Paulo–São Paulo") throw new Exception(br);
+        var (cn, _) = db.GetAddress("2.0.0.10".ToUInt32IP());
+        if (cn != "China–Beijing–Beijing–" + longName) throw new Exception(cn);
+    });
+
     // ============ CONV IP 地址转换 ============
 
     Run("IpHelper_StringRoundtrip", () =>
@@ -274,6 +294,34 @@ try
         {
             Localization.Culture = oldCulture;
             Localization.LogCulture = oldLogCulture;
+        }
+    });
+
+    Run("Localization_AllLocales", () =>
+    {
+        var cultures = new[]
+        {
+            "zh-Hans", "zh-Hant", "ar", "bn", "cs", "da", "de", "el", "es", "fa", "fi", "fr", "he", "hi",
+            "hu", "id", "it", "ja", "ko", "ms", "nb", "nl", "pl", "pt", "ro", "ru", "sv", "th", "tr", "uk", "vi",
+            "iw", "in", "no", "mo",
+        };
+        var oldCulture = Localization.Culture;
+        try
+        {
+            foreach (var name in cultures)
+            {
+                try { Localization.Culture = new CultureInfo(name); }
+                catch (CultureNotFoundException) { continue; }
+
+                var text = Localization.Translate("IP database: {0}", "x");
+                if (text == "IP database: x") throw new Exception($"未命中译文：{name}");
+            }
+
+            // InvariantGlobalization 下没有任何具名区域性，词表不注册、英文回退，视为通过
+        }
+        finally
+        {
+            Localization.Culture = oldCulture;
         }
     });
 }

@@ -77,7 +77,7 @@ public class IpCsvTests
         {
             // 覆盖带音标拉丁字母、阿拉伯文、韩文、日文与超过 64 字节的长地名；
             // GB2312/GBK 会把这些字符写成 '?'，必须使用 GB18030 才能无损往返
-            var longName = "中国–" + new String('北', 40) + "–São Paulo–القاهرة";
+            var longName = "中国–" + new String('北', 40) + "–São Paulo–القاهرة–😀";
             var csv = BuildCsv(dir, "start_ip,end_ip,country_code,country_name,state_prov,district,city\n" +
                 "6.0.0.0,6.0.0.255,BR,Brazil,São Paulo,São Paulo,São Paulo\n" +
                 "7.0.0.0,7.0.0.255,EG,Egypt,Cairo,Cairo,القاهرة\n" +
