@@ -43,7 +43,7 @@ jobs:
 
   # Linux LoongArch64（LA64，非阻塞观察项）：GitHub 无 LA64 runner/runtime pack，
   # 采用 docker + QEMU 用户态仿真（loong64 binfmt）+ 龙芯 SDK 在 loong64 容器内跑 net10.0 全量单测。
-  # 容器内不装 ICU（invariant 模式，测试无 culture 依赖，消除 apt 慢源卡点）；
+  # 容器内不装 ICU（invariant 模式，多语言用例自动跳过，消除 apt 慢源卡点）；
   # xUnit v3 自带 Microsoft.Testing.Platform 进程内执行器，直接以 LA64 运行时执行测试程序集即可，无需 vstest。
   # continue-on-error：该 RID 的目标是尽早暴露龙芯平台兼容问题，任何环节出错都不阻塞主分支。
   loongarch64:
@@ -74,7 +74,7 @@ jobs:
       # 容器内仅以 LA64 运行时执行测试
       run: dotnet build XUnitTest/XUnitTest.csproj -c Release --nologo
     - name: Unit Tests (net10.0) in loong64 Container
-      # 容器内不装 ICU（invariant 模式，测试无 culture 依赖，消除 apt 慢源卡点）；
+      # 容器内不装 ICU（invariant 模式，多语言用例自动跳过，消除 apt 慢源卡点）；
       # DOTNET_EnableHWIntrinsic=0：QEMU 用户态对 LASX/LSX 指令覆盖不全，JIT 动态桩实测触发
       # Illegal instruction（ExecutionEngineException），关闭硬件内建以强制基线指令；
       # xUnit v3 测试程序集自身就是 MTP 执行器，直接 dotnet XUnitTest.dll（无需 vstest / 自宿主加载器）；

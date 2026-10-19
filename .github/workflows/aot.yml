@@ -29,7 +29,7 @@ jobs:
         dotnet build NewLife.IP\NewLife.IP.csproj -f net9.0 -c Release -warnaserror
         dotnet build NewLife.IP\NewLife.IP.csproj -f net10.0 -c Release -warnaserror
 
-  # NativeAOT 冒烟矩阵（非阻塞观察项）：NativeAOT 官方不支持跨 OS 编译，每个 RID 用原生 runner 发布运行（AotSmoke 17 场景）。
+  # NativeAOT 冒烟矩阵（非阻塞观察项）：NativeAOT 官方不支持跨 OS 编译，每个 RID 用原生 runner 发布运行（AotSmoke 18 场景）。
   # win-x64 / linux-x64 / linux-arm64 全覆盖；linux-la64 见文件末尾 job。任何失败仅记录、不阻塞主分支。
   aot:
     name: aot (${{ matrix.rid }})
@@ -60,7 +60,7 @@ jobs:
       if: runner.os == 'Linux'
       run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
     - name: JIT Baseline
-      # 同一冒烟工程以 JIT 运行（17 场景），为 AOT 结果提供对照
+      # 同一冒烟工程以 JIT 运行（18 场景），为 AOT 结果提供对照
       run: dotnet run -c Release --project AotSmoke/AotSmoke.csproj
     - name: Publish NativeAOT Smoke
       run: dotnet publish AotSmoke/AotSmoke.csproj -c Release -r ${{ matrix.rid }} -o AotSmoke/bin/aot-out
@@ -70,7 +70,7 @@ jobs:
       run: ./AotSmoke/bin/aot-out/${{ matrix.bin }}
 
   # Linux LoongArch64（LA64，非阻塞观察项）：NativeAOT 官方无 LA64 目标（ILCompiler 未承诺），
-  # 以该 RID 的 JIT 运行验证库的 LA64 兼容性（AotSmoke 17 场景），NativeAOT 发布列为探索项。
+  # 以该 RID 的 JIT 运行验证库的 LA64 兼容性（AotSmoke 18 场景），NativeAOT 发布列为探索项。
   # 方案：docker + QEMU 用户态仿真（loong64 binfmt）+ 龙芯 SDK 在 loong64 容器内执行 ——
   # 裸宿主缺 LA64 动态加载器（Could not open /lib64/ld-linux-loongarch-lp64d.so.1），必须在容器内执行；
   # 基础镜像 lcr.loongnix.cn/debian:14-slim 为 Debian unstable loong64 端口，自带 loader 与可用 apt（deb.debian.org）。
@@ -100,7 +100,7 @@ jobs:
     - name: Build AotSmoke (host x64 SDK)
       # 龙芯 SDK 在 QEMU 下的 MSBuild 链路不稳，构建放宿主 x64 SDK（产出 RID 无关 IL），容器内仅以 LA64 运行时执行
       run: dotnet build AotSmoke/AotSmoke.csproj -c Release --nologo
-    - name: JIT Smoke in loong64 Container (AotSmoke 17 场景)
+    - name: JIT Smoke in loong64 Container (AotSmoke 18 场景)
       env:
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
       run: |

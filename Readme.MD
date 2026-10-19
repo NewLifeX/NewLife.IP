@@ -28,6 +28,7 @@ Nuget：`NewLife.IP`
 - [功能清单](Doc/功能清单.md) — 实现 / 测试 / 注释三维状态追踪
 - [架构设计](Doc/架构设计.md) — 分层、组件与关键流程
 - [竞品分析](Doc/竞品分析.md) — 静态库 / 在线库竞品对比与差距分析
+- [多语言本地化](Doc/多语言本地化.md) — 运行时词表、前缀日志与校验脚本
 
 ---
 ## 特性 (Features)
@@ -144,7 +145,7 @@ var (area, addr) = online.GetAddress("116.234.91.199"); // area=中国–上海�
 ## 与 NewLife 生态的集成
 - `NewLife.Net`：`IpResolver.Register()` 后，框架内部统一调用解析
 - 配置：借助 `NewLife.Core` 的 `Setting`（`DataPath`, `PluginServer`）实现可部署化
-- 日志：所有关键事件走 `XTrace`；可接入星尘 (Stardust) 分布式追踪与日志汇聚
+- 日志：关键事件走 `ILog`（默认 `XTrace.Log`），支持自定义日志对象与实例前缀；消息按 `Localization.LogCulture` 本地化，可接入星尘 (Stardust) 分布式追踪与日志汇聚
 
 ---
 ## 自定义使用场景
