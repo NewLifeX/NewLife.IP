@@ -1,5 +1,7 @@
+using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
+using NewLife;
 
 namespace MobileSmoke;
 
@@ -36,6 +38,22 @@ public static class Smoke
         });
         Check("ToUInt32IP", () => { if (NewLife.IP.IpHelper.ToUInt32IP("114.114.114.114") == 0) throw new Exception("zero"); });
         Check("ToStringIP", () => { var s = NewLife.IP.IpHelper.ToStringIP(NewLife.IP.IpHelper.ToUInt32IP("114.114.114.114")); if (s != "114.114.114.114") throw new Exception(s); });
+        Check("Localization", () =>
+        {
+            var oldCulture = Localization.Culture;
+            try
+            {
+                // 平台缺少 ICU 时具名区域性不可用，此时词表不注册，按英文源文回退
+                try { Localization.Culture = new CultureInfo("zh-CN"); } catch (CultureNotFoundException) { }
+
+                var text = Localization.Translate("IP database: {0}", "x");
+                if (text != "IP数据库：x" && text != "IP database: x") throw new Exception(text);
+            }
+            finally
+            {
+                Localization.Culture = oldCulture;
+            }
+        });
         var dir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         Directory.CreateDirectory(dir);
         var file = System.IO.Path.Combine(dir, "smoke.json");
