@@ -14,7 +14,7 @@
        省去 VSTest 宿主启动与独立发现阶段，测试项目必须为可执行程序 -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
-    <PackageReference Include="NewLife.Core" Version="12.0.2026.1019-beta0659" />
+    <PackageReference Include="NewLife.Core" Version="12.0.2026.1019-beta1413" />
     <PackageReference Include="xunit.v3" Version="4.0.2" />
   </ItemGroup>
 
