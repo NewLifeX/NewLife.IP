@@ -155,6 +155,46 @@ public class IpDatabaseTests : IClassFixture<IpDatabaseFixture>
         }
     }
 
+    [Fact(DisplayName = "GetAddress 多语言长文本不截断")]
+    public void GetAddress_MultilingualLongText()
+    {
+        var area = "中国–" + new String('北', 40) + "–São Paulo–القاهرة";
+        var addr = "运营商–São Paulo–القاهرة";
+        var file = BuildFile(new TestDbBuilder.DbRecord(0x03000000u, 0x030000FFu, area, addr, false));
+        try
+        {
+            using var db = new IpDatabase();
+            db.SetFile(file);
+
+            var (a, b) = db.GetAddress(0x03000010u);
+            Assert.Equal(area, a);
+            Assert.Equal(addr, b);
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+    }
+
+    [Fact(DisplayName = "GetAddress 空区域时仍能读取后续地址")]
+    public void GetAddress_EmptyArea()
+    {
+        var file = BuildFile(new TestDbBuilder.DbRecord(0x04000000u, 0x040000FFu, "", "运营商", false));
+        try
+        {
+            using var db = new IpDatabase();
+            db.SetFile(file);
+
+            var (area, addr) = db.GetAddress(0x04000010u);
+            Assert.Equal("", area);
+            Assert.Equal("运营商", addr);
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+    }
+
     [Fact(DisplayName = "Dispose 重复销毁不抛异常")]
     public void Dispose_Twice()
     {

@@ -124,7 +124,7 @@ var ip = new Ip
 Localization.Culture = new CultureInfo("zh-CN");     // 异常与界面文案
 Localization.LogCulture = new CultureInfo("zh-CN");  // 日志语言（为空时跟随 Culture）
 ```
-- 内置 10 种语言词表（英文兜底），编译期生成、AOT 安全；缺失译文自动回退英文。
+- 内置 31 种语言词表，另含 `iw`/`in`/`no`/`mo` 旧式区域别名（英文兜底），编译期生成、AOT 安全；缺失译文自动回退英文。
 - 日志统一走 `InfoPrefixed` / `ErrorPrefixed`，前缀不参与查表，动态实例名不会导致译文失效。
 - 详见 [多语言本地化](Doc/多语言本地化.md)。
 
@@ -133,7 +133,7 @@ Localization.LogCulture = new CultureInfo("zh-CN");  // 日志语言（为空时
 - 默认文件名：`ip.gz`，放置于 `Setting.Current.DataPath`（来自 `NewLife.Core` 配置体系）
 - 若本地文件不存在、过小 (<3MB) 或早于内置阈值日期，则尝试从 `Setting.PluginServer` 下载
 - 下载成功：覆盖旧文件，`Ip.Init()` 重新构建 MMF
-- 支持用户自备同格式数据文件（兼容纯真 IPv4 库结构：索引区 + 记录区 + GB2312 文本）
+- 支持用户自备同格式数据文件（兼容纯真 IPv4 库结构：索引区 + 记录区 + GB18030 文本，兼容 GB2312/GBK）
 - 读取时：
   1. 若为 `.gz` 则解压到临时文件
   2. 使用 `MemoryMappedFile.CreateFromFile` 方式只读访问
@@ -144,13 +144,14 @@ Localization.LogCulture = new CultureInfo("zh-CN");  // 日志语言（为空时
 1. 输入 IPv4 => 转为 `UInt32` (Big-Endian)
 2. 在索引区做二分：`(start,end)` 覆盖范围即命中
 3. 读取指向的数据段：按标记字节 (1 / 2) 判断是否重定向
-4. 解析 GB2312 字节串，过滤保留字 `CZ88.NET`，返回 `(area, addr)`
+4. 解析 GB18030 字节串（兼容 GB2312/GBK），过滤保留字 `CZ88.NET`，返回 `(area, addr)`
 
 ---
 ## 性能与资源
 - 索引二分：log2(N) 级；N≈数十万记录时仅 ~18 次比较
 - MMF 避免一次性全部装入托管堆；仅在命中区域产生极少字符串分配
-- ThreadStatic 缓冲区（64B）降低重复分配；GB2312 解码仅针对命中段
+- ThreadStatic 缓冲区（起始 64B，按需扩容至 4KB）降低重复分配；GB18030 解码仅针对命中段，多语言长地名不会截断
+- .NET Core/Android/iOS 首次使用时自动注册代码页提供程序，直接使用 `IpDatabase` / `IpCsv` 也无需手工注册
 - 适合长生命周期后台服务 / 网关 / API Server；在高并发下 CPU 占用平稳
 
 (具体 Benchmark 会随版本在 Release Notes 中补充，欢迎 PR 补测数据。)

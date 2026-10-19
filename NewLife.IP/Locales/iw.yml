@@ -1,0 +1,11 @@
+# עברית 词表（旧式区域名 iw 别名，内容同 he）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"CSV file not found.": "קובץ CSV לא נמצא."
+"No valid records in the CSV file.": "אין רשומות תקפות בקובץ ה-CSV."
+"Unable to find the IP database {0}": "לא ניתן למצוא את מסד הנתונים IP {0}"
+"IP database: {0}": "מסד נתונים IP: {0}"
+"IP database {0} was not found; downloading from {1}.": "מסד הנתונים IP {0} לא נמצא; מוריד מ-{1}."
+"IP database {0} has expired; downloading an update from {1}.": "מסד הנתונים IP {0} פג תוקף; מוריד עדכון מ-{1}."
+"IP database downloaded successfully: {0}": "מסד הנתונים IP הורד בהצלחה: {0}"
+"Failed to download the IP database; the file does not exist: {0}": "הורדת מסד הנתונים IP נכשלה; הקובץ אינו קיים: {0}"
+"IP record count: {0:n0}": "מספר רשומות IP: {0:n0}"
+"IP database conversion completed: {0:n0} records → {1}": "המרת מסד הנתונים IP הושלמה: {0:n0} רשומות → {1}"

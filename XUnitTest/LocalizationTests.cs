@@ -113,6 +113,79 @@ public class LocalizationTests : IClassFixture<BigFileFixture>
         });
     }
 
+    [Theory(DisplayName = "旧式区域名映射到对应语言")]
+    [InlineData("iw", "מסד נתונים IP")]
+    [InlineData("in", "Basis data IP")]
+    [InlineData("no", "IP-database")]
+    [InlineData("mo", "Baza de date IP")]
+    public void Translate_LegacyAliases(String culture, String expected)
+    {
+        RequireCulture(culture);
+
+        WithCulture(new CultureInfo(culture), null, () =>
+        {
+            Assert.Contains(expected, Localization.Translate("IP database: {0}", "x"));
+        });
+    }
+
+    [Fact(DisplayName = "未设置 Culture 时跟随 CurrentUICulture")]
+    public void Translate_FollowsCurrentUICulture()
+    {
+        RequireCulture("zh-CN");
+
+        var old = CultureInfo.CurrentUICulture;
+        try
+        {
+            CultureInfo.CurrentUICulture = new CultureInfo("zh-CN");
+
+            WithCulture(null, null, () =>
+            {
+                Assert.Equal("IP数据库：x", Localization.Translate("IP database: {0}", "x"));
+            });
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = old;
+        }
+    }
+
+    [Fact(DisplayName = "全部语言覆盖全部运行时消息")]
+    public void Translate_AllMessages()
+    {
+        var keys = new (String Key, Object[] Args)[]
+        {
+            ("CSV file not found.", Array.Empty<Object>()),
+            ("No valid records in the CSV file.", Array.Empty<Object>()),
+            ("Unable to find the IP database {0}", ["x"]),
+            ("IP database: {0}", ["x"]),
+            ("IP database {0} was not found; downloading from {1}.", ["x", "y"]),
+            ("IP database {0} has expired; downloading an update from {1}.", ["x", "y"]),
+            ("IP database downloaded successfully: {0}", ["x"]),
+            ("Failed to download the IP database; the file does not exist: {0}", ["x"]),
+            ("IP record count: {0:n0}", [5]),
+            ("IP database conversion completed: {0:n0} records → {1}", [1, "x"]),
+        };
+        var cultures = new[]
+        {
+            "zh-Hans", "zh-Hant", "ar", "bn", "cs", "da", "de", "el", "es", "fa", "fi", "fr", "he", "hi",
+            "hu", "id", "it", "ja", "ko", "ms", "nb", "nl", "pl", "pt", "ro", "ru", "sv", "th", "tr", "uk", "vi",
+        };
+
+        foreach (var name in cultures)
+        {
+            RequireCulture(name);
+
+            WithCulture(new CultureInfo(name), null, () =>
+            {
+                foreach (var (key, args) in keys)
+                {
+                    var text = args.Length == 0 ? Localization.Translate(key) : Localization.Translate(key, args);
+                    Assert.NotEqual(key, text);
+                }
+            });
+        }
+    }
+
     [Fact(DisplayName = "带前缀日志先翻译消息再拼前缀")]
     public void LogPrefixed_Translate()
     {

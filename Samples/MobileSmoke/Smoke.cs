@@ -44,10 +44,12 @@ public static class Smoke
             try
             {
                 // 平台缺少 ICU 时具名区域性不可用，此时词表不注册，按英文源文回退
-                try { Localization.Culture = new CultureInfo("zh-CN"); } catch (CultureNotFoundException) { }
+                var hasCulture = true;
+                try { Localization.Culture = new CultureInfo("zh-CN"); } catch (CultureNotFoundException) { hasCulture = false; }
 
                 var text = Localization.Translate("IP database: {0}", "x");
-                if (text != "IP数据库：x" && text != "IP database: x") throw new Exception(text);
+                var expected = hasCulture ? "IP数据库：x" : "IP database: x";
+                if (text != expected) throw new Exception(text);
             }
             finally
             {

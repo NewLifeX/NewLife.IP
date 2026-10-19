@@ -1,5 +1,4 @@
 using System.IO;
-using System.Text;
 using NewLife.IO;
 using NewLife.Log;
 using NewLife;
@@ -115,8 +114,8 @@ public static class IpCsv
         var indexStart = 8u;
         var indexBytes = (UInt32)(n * 7);
 
-        // 计算数据块偏移
-        var enc = Encoding.GetEncoding("GB2312");
+        // 计算数据块偏移。GB18030 兼容 GB2312/GBK，并可保留拉丁扩展、阿拉伯、韩文等多语言地名
+        var enc = IpEncoding.Db;
         var offsets = new UInt32[n];
         var pos = indexStart + indexBytes;
         for (var i = 0; i < n; i++)

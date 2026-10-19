@@ -60,7 +60,7 @@ try
         if (0x08080404u.ToAddress().ToString() != "8.8.4.4") throw new Exception("ToAddress");
     });
 
-    // ============ CORE 核心解析引擎（MMF + 二分检索 + GB2312） ============
+    // ============ CORE 核心解析引擎（MMF + 二分检索 + GB18030） ============
 
     Run("IpDatabase_ParseNormal", () =>
     {
@@ -107,6 +107,17 @@ try
         using var db = new IpDatabase().SetFile(gzFile);
         var (area, addr) = db.GetAddress("0.0.1.100".ToUInt32IP());
         if (area != "测试省B" || addr != "测试运营商B") throw new Exception($"({area},{addr})");
+    });
+
+    Run("IpDatabase_MultilingualLongText", () =>
+    {
+        var area = "中国–" + new String('北', 40) + "–São Paulo–القاهرة";
+        var file = Path.Combine(temp, "multilingual.ip");
+        TestDbBuilder.Build(file, [new TestDbBuilder.DbRecord(0x0B000000u, 0x0B0000FFu, area, "São Paulo", false)]);
+
+        using var db = new IpDatabase().SetFile(file);
+        var (text, addr) = db.GetAddress(0x0B000010u);
+        if (text != area || addr != "São Paulo") throw new Exception($"({text},{addr})");
     });
 
     // ============ API 高层查询封装 ============
@@ -244,17 +255,20 @@ try
         var log = new CapturingLog();
         var oldCulture = Localization.Culture;
         var oldLogCulture = Localization.LogCulture;
+        var hasCulture = true;
         try
         {
             // InvariantGlobalization 下具名区域性不可用，此时词表不注册，消息回退英文
-            try { Localization.Culture = new CultureInfo("en-US"); } catch (CultureNotFoundException) { }
-            try { Localization.LogCulture = new CultureInfo("zh-CN"); } catch (CultureNotFoundException) { }
+            try { Localization.Culture = new CultureInfo("en-US"); } catch (CultureNotFoundException) { hasCulture = false; }
+            try { Localization.LogCulture = new CultureInfo("zh-CN"); } catch (CultureNotFoundException) { hasCulture = false; }
 
             log.InfoPrefixed("[X] ", "IP database: {0}", "x");
-            if (log.Last != "[X] IP database: x" && log.Last != "[X] IP数据库：x") throw new Exception($"log={log.Last}");
+            var expected = hasCulture ? "[X] IP数据库：x" : "[X] IP database: x";
+            if (log.Last != expected) throw new Exception($"log={log.Last}");
 
             log.ErrorPrefixed("[X] ", "IP record count: {0:n0}", 5);
-            if (log.Last != "[X] IP record count: 5" && log.Last != "[X] IP记录数：5") throw new Exception($"log={log.Last}");
+            expected = hasCulture ? "[X] IP记录数：5" : "[X] IP record count: 5";
+            if (log.Last != expected) throw new Exception($"log={log.Last}");
         }
         finally
         {

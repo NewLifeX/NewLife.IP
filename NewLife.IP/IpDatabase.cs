@@ -202,19 +202,57 @@ public class IpDatabase : IDisposable
     private static Encoding _encoding;
     String ReadString(UnmanagedMemoryAccessor view, ref UInt32 p)
     {
+        // 64字节缓冲可覆盖绝大多数地名，但多语言长地名（GB18030 下更占字节）必须按需扩容，
+        // 否则会截断文本并把读取位置推进到字符串中间，后续地址也会跟着错位
         var buf = _buf ??= new Byte[64];
-        var count = view.ReadArray(p, buf, 0, buf.Length);
+        var len = 0;
+        var terminated = false;
+        while (true)
+        {
+            var offset = p + (UInt32)len;
+            if (offset >= view.Capacity) break;
 
-        var k = 0u;
-        while (k < count && buf[k] != 0) k++;
-        if (k == 0) return String.Empty;
+            if (len == buf.Length)
+            {
+                if (buf.Length >= 4096)
+                {
+                    // 到达上限时单独确认紧跟的终止符，避免恰好 4KB 的文本被误判为未终止
+                    if (offset < view.Capacity && view.ReadByte(offset) == 0) terminated = true;
+                    break;
+                }
+
+                Array.Resize(ref buf, buf.Length * 2);
+                _buf = buf;
+            }
+
+            var available = (Int32)Math.Min(buf.Length - len, view.Capacity - offset);
+            var count = view.ReadArray(offset, buf, len, available);
+            if (count <= 0) break;
+
+            var end = Array.IndexOf(buf, (Byte)0, len, count);
+            if (end >= 0)
+            {
+                len = end;
+                terminated = true;
+                break;
+            }
+
+            len += count;
+        }
+
+        if (len <= 0)
+        {
+            // 空字符串也要跳过 0 终止符，否则后续地址会从终止符位置开始读取
+            if (terminated) p += 1;
+            return String.Empty;
+        }
 
         // 跳过0终止符，确保后续地址字符串从内容开始读取
-        p += k + 1;
+        p += (UInt32)len + (terminated ? 1u : 0u);
 
-        _encoding ??= Encoding.GetEncoding("GB2312");
+        _encoding ??= IpEncoding.Db;
 
-        var str = _encoding.GetString(buf, 0, (Int32)k).Trim().Trim('\0').Trim();
+        var str = _encoding.GetString(buf, 0, len).Trim().Trim('\0').Trim();
         if (str == "CZ88.NET") return String.Empty;
 
         return str;

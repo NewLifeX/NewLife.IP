@@ -25,8 +25,8 @@ internal static class TestDbBuilder
 
     static Encoding _enc;
 
-    /// <summary>GB2312 编码（调用方需先注册 CodePagesEncodingProvider）</summary>
-    static Encoding Enc => _enc ??= Encoding.GetEncoding("GB2312");
+    /// <summary>数据库文本编码。GB18030 兼容 GB2312/GBK，并可保留多语言地名</summary>
+    static Encoding Enc => _enc ??= Encoding.GetEncoding("GB18030");
 
     /// <summary>构造测试数据库文件（纯真兼容：头部 + 索引区 + 数据区）</summary>
     /// <param name="file">目标文件路径</param>
@@ -92,7 +92,7 @@ internal static class TestDbBuilder
         return sz;
     }
 
-    /// <summary>GB2312 字节数</summary>
+    /// <summary>GB18030 字节数</summary>
     static UInt32 ByteCount(String s) => (UInt32)Enc.GetByteCount(s);
 
     /// <summary>写入小端 UInt32</summary>
@@ -112,7 +112,7 @@ internal static class TestDbBuilder
         ms.WriteByte((Byte)(offset >> 16));
     }
 
-    /// <summary>写入 GB2312 字符串 + 0 终止符</summary>
+    /// <summary>写入 GB18030 字符串 + 0 终止符</summary>
     static void WriteString(Stream ms, String s)
     {
         var buf = Enc.GetBytes(s);

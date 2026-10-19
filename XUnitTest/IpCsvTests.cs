@@ -69,6 +69,41 @@ public class IpCsvTests
         }
     }
 
+    [Fact(DisplayName = "Convert 保留多语言地名与长文本")]
+    public void Convert_Multilingual()
+    {
+        var dir = CreateDir();
+        try
+        {
+            // 覆盖带音标拉丁字母、阿拉伯文、韩文、日文与超过 64 字节的长地名；
+            // GB2312/GBK 会把这些字符写成 '?'，必须使用 GB18030 才能无损往返
+            var longName = "中国–" + new String('北', 40) + "–São Paulo–القاهرة";
+            var csv = BuildCsv(dir, "start_ip,end_ip,country_code,country_name,state_prov,district,city\n" +
+                "6.0.0.0,6.0.0.255,BR,Brazil,São Paulo,São Paulo,São Paulo\n" +
+                "7.0.0.0,7.0.0.255,EG,Egypt,Cairo,Cairo,القاهرة\n" +
+                "8.0.0.0,8.0.0.255,KR,South Korea,Seoul,Seoul,서울\n" +
+                "9.0.0.0,9.0.0.255,JP,Japan,Tokyo,Tokyo,東京\n" +
+                "10.0.0.0,10.0.0.255,CN,China,Beijing,Beijing," + longName + "\n");
+            var dbFile = Path.Combine(dir, "ip.db");
+
+            var count = IpCsv.Convert(csv, dbFile);
+            Assert.Equal(5, count);
+
+            using var db = new IpDatabase();
+            db.SetFile(dbFile);
+
+            Assert.Equal("Brazil–São Paulo–São Paulo–São Paulo", db.GetAddress(0x06000010u).area);
+            Assert.Equal("Egypt–Cairo–Cairo–القاهرة", db.GetAddress(0x07000010u).area);
+            Assert.Equal("South Korea–Seoul–Seoul–서울", db.GetAddress(0x08000010u).area);
+            Assert.Equal("Japan–Tokyo–Tokyo–東京", db.GetAddress(0x09000010u).area);
+            Assert.Equal("China–Beijing–Beijing–" + longName, db.GetAddress(0x0A000010u).area);
+        }
+        finally
+        {
+            Cleanup(dir);
+        }
+    }
+
     [Fact(DisplayName = "Convert 处理引号与逗号字段")]
     public void Convert_Quoted()
     {
