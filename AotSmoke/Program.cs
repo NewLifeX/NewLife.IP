@@ -3,6 +3,7 @@
 // Same binary is run under JIT (dotnet run) and NativeAOT (publish) to compare.
 //
 // 说明：AOT 能力验收冒烟件，由 .github/workflows/aot.yml 的 aot 矩阵自动执行（非 0 退出码即失败）。
+using System.Globalization;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -235,6 +236,32 @@ try
         var (area, addr) = db.GetAddress("0.0.3.100".ToUInt32IP());
         if (area != "China–Beijing–Beijing–Beijing" || addr != "") throw new Exception($"({area},{addr})");
     });
+
+    // ============ 运行时多语言 ============
+
+    Run("Localization_PrefixedLog", () =>
+    {
+        var log = new CapturingLog();
+        var oldCulture = Localization.Culture;
+        var oldLogCulture = Localization.LogCulture;
+        try
+        {
+            // InvariantGlobalization 下具名区域性不可用，此时词表不注册，消息回退英文
+            try { Localization.Culture = new CultureInfo("en-US"); } catch (CultureNotFoundException) { }
+            try { Localization.LogCulture = new CultureInfo("zh-CN"); } catch (CultureNotFoundException) { }
+
+            log.InfoPrefixed("[X] ", "IP database: {0}", "x");
+            if (log.Last != "[X] IP database: x" && log.Last != "[X] IP数据库：x") throw new Exception($"log={log.Last}");
+
+            log.ErrorPrefixed("[X] ", "IP record count: {0:n0}", 5);
+            if (log.Last != "[X] IP record count: 5" && log.Last != "[X] IP记录数：5") throw new Exception($"log={log.Last}");
+        }
+        finally
+        {
+            Localization.Culture = oldCulture;
+            Localization.LogCulture = oldLogCulture;
+        }
+    });
 }
 finally
 {
@@ -250,3 +277,27 @@ foreach (var r in results.Where(r => !r.Ok))
 }
 
 return fail > 0 ? 1 : 0;
+
+/// <summary>捕获日志消息的测试日志器</summary>
+sealed class CapturingLog : ILog
+{
+    private String? _last;
+
+    public Boolean Enable { get; set; } = true;
+
+    public LogLevel Level { get; set; } = LogLevel.All;
+
+    public String? Last => _last;
+
+    public void Write(LogLevel level, String format, params Object?[] args) => _last = args != null && args.Length > 0 ? String.Format(format, args) : format;
+
+    public void Debug(String format, params Object?[] args) => Write(LogLevel.Debug, format, args);
+
+    public void Info(String format, params Object?[] args) => Write(LogLevel.Info, format, args);
+
+    public void Warn(String format, params Object?[] args) => Write(LogLevel.Warn, format, args);
+
+    public void Error(String format, params Object?[] args) => Write(LogLevel.Error, format, args);
+
+    public void Fatal(String format, params Object?[] args) => Write(LogLevel.Fatal, format, args);
+}
