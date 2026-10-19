@@ -42,6 +42,7 @@ Nuget：`NewLife.IP`
 - 提供便捷扩展方法：`string.IPToAddress()` / `IPAddress.ToUInt32()` 等
 - 可插入到 `NewLife.Net` 生态，通过 `IpResolver.Register()` 统一解析
 - **双数据源**：本地离线（MMF 秒回）+ 在线 API（可选，默认 ip-api.com，含缓存与容错），`IpResolver.Online` 一键切换
+- 运行时多语言：10 种语言词表（英文兜底），日志支持注入日志对象、实例前缀与独立日志语言
 - MIT 许可，便于商用 / 二次开发
 
 ---
