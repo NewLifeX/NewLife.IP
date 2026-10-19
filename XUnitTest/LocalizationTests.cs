@@ -110,6 +110,40 @@ public class LocalizationTests : IClassFixture<BigFileFixture>
         });
     }
 
+    [Fact(DisplayName = "未注册语言的前缀日志回退英文")]
+    public void LogPrefixed_Fallback()
+    {
+        RequireCulture("eo");
+
+        WithCulture(new CultureInfo("eo"), null, () =>
+        {
+            var log = new CapturingLog();
+
+            log.InfoPrefixed("[X] ", "IP database: {0}", "x");
+            Assert.Equal("[X] IP database: x", log.Last);
+        });
+    }
+
+    [Fact(DisplayName = "简体中文词表覆盖全部运行时消息")]
+    public void Translate_AllKeys_zhHans()
+    {
+        RequireCulture("zh-CN");
+
+        WithCulture(new CultureInfo("zh-CN"), null, () =>
+        {
+            Assert.Equal("找不到CSV文件", Localization.Translate("CSV file not found."));
+            Assert.Equal("CSV中没有有效记录", Localization.Translate("No valid records in the CSV file."));
+            Assert.Equal("无法找到IP数据库x", Localization.Translate("Unable to find the IP database {0}", "x"));
+            Assert.Equal("IP数据库：x", Localization.Translate("IP database: {0}", "x"));
+            Assert.Equal("没有找到IP数据库x，准备联网获取 y", Localization.Translate("IP database {0} was not found; downloading from {1}.", "x", "y"));
+            Assert.Equal("IP数据库x已过期，准备联网更新 y", Localization.Translate("IP database {0} has expired; downloading an update from {1}.", "x", "y"));
+            Assert.Equal("下载IP数据库成功，文件：x", Localization.Translate("IP database downloaded successfully: {0}", "x"));
+            Assert.Equal("下载IP数据库失败，文件不存在！x", Localization.Translate("Failed to download the IP database; the file does not exist: {0}", "x"));
+            Assert.Equal("IP记录数：5", Localization.Translate("IP record count: {0:n0}", 5));
+            Assert.Equal("IP数据库转换完成：1 条记录 → x", Localization.Translate("IP database conversion completed: {0:n0} records → {1}", 1, "x"));
+        });
+    }
+
     [Fact(DisplayName = "Ip 自定义日志与前缀，消息按日志语言翻译")]
     public void Ip_LogPrefixed()
     {
