@@ -1,4 +1,6 @@
 # Українська 词表（uk）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"NewLife.IP - IPv4 Geolocation Library": "NewLife.IP - Бібліотека геолокації IPv4"
+"High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates.": "Високопродуктивна локальна бібліотека геолокації IPv4 на основі двійкового пошуку у відображених у пам'ять файлах з автоматичним оновленням бази IP."
 "CSV file not found.": "Файл CSV не знайдено."
 "No valid records in the CSV file.": "У файлі CSV немає дійсних записів."
 "Unable to find the IP database {0}": "Не вдалося знайти базу даних IP {0}"

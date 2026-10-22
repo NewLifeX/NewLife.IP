@@ -1,4 +1,6 @@
 # 日本語 词表（ja）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"NewLife.IP - IPv4 Geolocation Library": "NewLife.IP - IPv4 位置情報ライブラリ"
+"High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates.": "メモリマップドファイルの二分検索に基づく高性能なローカル IPv4 位置情報検索ライブラリ。IP データベースの自動更新に対応。"
 "CSV file not found.": "CSV ファイルが見つかりません。"
 "No valid records in the CSV file.": "CSV ファイルに有効なレコードがありません。"
 "Unable to find the IP database {0}": "IP データベース {0} が見つかりません"

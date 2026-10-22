@@ -1,4 +1,6 @@
 # 한국어 词表（ko）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"NewLife.IP - IPv4 Geolocation Library": "NewLife.IP - IPv4 지역 정보 라이브러리"
+"High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates.": "메모리 매핑 파일의 이진 검색을 기반으로 하는 고성능 로컬 IPv4 지역 정보 조회 라이브러리이며 IP 데이터베이스를 자동으로 업데이트합니다."
 "CSV file not found.": "CSV 파일을 찾을 수 없습니다."
 "No valid records in the CSV file.": "CSV 파일에 유효한 레코드가 없습니다."
 "Unable to find the IP database {0}": "IP 데이터베이스 {0}을(를) 찾을 수 없습니다"

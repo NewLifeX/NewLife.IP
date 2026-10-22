@@ -1,4 +1,6 @@
 # Français 词表（fr）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"NewLife.IP - IPv4 Geolocation Library": "NewLife.IP - Bibliothèque de géolocalisation IPv4"
+"High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates.": "Bibliothèque locale de géolocalisation IPv4 hautes performances basée sur une recherche binaire dans des fichiers mappés en mémoire, avec mise à jour automatique de la base IP."
 "CSV file not found.": "Fichier CSV introuvable."
 "No valid records in the CSV file.": "Aucun enregistrement valide dans le fichier CSV."
 "Unable to find the IP database {0}": "Impossible de trouver la base de données IP {0}"

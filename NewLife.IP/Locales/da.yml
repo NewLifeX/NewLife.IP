@@ -1,4 +1,6 @@
 # Dansk 词表（da）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"NewLife.IP - IPv4 Geolocation Library": "NewLife.IP - IPv4-geolokationsbibliotek"
+"High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates.": "Højtydende lokalt IPv4-geolokationsopslagsbibliotek baseret på binær søgning i hukommelseskortlagte filer med automatisk opdatering af IP-databasen."
 "CSV file not found.": "CSV-fil blev ikke fundet."
 "No valid records in the CSV file.": "Der er ingen gyldige poster i CSV-filen."
 "Unable to find the IP database {0}": "Kan ikke finde IP-databasen {0}"

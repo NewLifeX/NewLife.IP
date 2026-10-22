@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net45;net461;netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
-    <AssemblyTitle>IPv4归属地解析库</AssemblyTitle>
-    <Description>高性能本地IPv4归属地查询库，基于MMF二分检索并支持IP库自动更新。</Description>
+    <AssemblyTitle>NewLife.IP - IPv4 Geolocation Library</AssemblyTitle>
+    <Description>High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates.</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 新生命开发团队</Copyright>
     <VersionPrefix>2.5</VersionPrefix>
@@ -28,6 +28,7 @@
 
   <PropertyGroup>
     <PackageId>$(AssemblyName)</PackageId>
+    <PackageDescription>High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates. 高性能本地 IPv4 归属地查询库，基于内存映射文件二分检索，并支持 IP 库自动更新。</PackageDescription>
     <Authors>$(Company)</Authors>
     <PackageProjectUrl>https://newlifex.com/core</PackageProjectUrl>
     <PackageIcon>leaf.png</PackageIcon>

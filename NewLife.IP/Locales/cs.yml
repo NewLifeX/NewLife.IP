@@ -1,4 +1,6 @@
 # Čeština 词表（cs）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"NewLife.IP - IPv4 Geolocation Library": "NewLife.IP - knihovna geolokace IPv4"
+"High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates.": "Vysoce výkonná lokální knihovna pro geolokaci IPv4 založená na binárním vyhledávání v memory-mapped souborech s automatickou aktualizací databáze IP."
 "CSV file not found.": "Soubor CSV nebyl nalezen."
 "No valid records in the CSV file.": "V souboru CSV nejsou žádné platné záznamy."
 "Unable to find the IP database {0}": "Databázi IP {0} nelze nalézt"

@@ -1,4 +1,6 @@
 # বাংলা 词表（bn）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"NewLife.IP - IPv4 Geolocation Library": "NewLife.IP - IPv4 ভৌগোলিক অবস্থান লাইব্রেরি"
+"High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates.": "মেমরি-ম্যাপড বাইনারি সার্চ ভিত্তিক উচ্চ-কর্মক্ষমতা সম্পন্ন স্থানীয় IPv4 ভৌগোলিক অবস্থান অনুসন্ধান লাইব্রেরি, স্বয়ংক্রিয় IP ডেটাবেস আপডেট সহ।"
 "CSV file not found.": "CSV ফাইল পাওয়া যায়নি।"
 "No valid records in the CSV file.": "CSV ফাইলে কোনো বৈধ রেকর্ড নেই।"
 "Unable to find the IP database {0}": "IP ডেটাবেস {0} পাওয়া যায়নি"

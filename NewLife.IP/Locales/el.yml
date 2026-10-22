@@ -1,4 +1,6 @@
 # Ελληνικά 词表（el）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"NewLife.IP - IPv4 Geolocation Library": "NewLife.IP - Βιβλιοθήκη γεωεντοπισμού IPv4"
+"High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates.": "Βιβλιοθήκη τοπικής γεωεντόπισης IPv4 υψηλών επιδόσεων βασισμένη σε δυαδική αναζήτηση σε αρχεία χαρτογραφημένα στη μνήμη, με αυτόματη ενημέρωση της βάσης IP."
 "CSV file not found.": "Το αρχείο CSV δεν βρέθηκε."
 "No valid records in the CSV file.": "Δεν υπάρχουν έγκυρες εγγραφές στο αρχείο CSV."
 "Unable to find the IP database {0}": "Δεν είναι δυνατή η εύρεση της βάσης δεδομένων IP {0}"

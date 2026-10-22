@@ -1,4 +1,6 @@
 # Tiếng Việt 词表（vi）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"NewLife.IP - IPv4 Geolocation Library": "NewLife.IP - Thư viện định vị IPv4"
+"High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates.": "Thư viện tra cứu vị trí IPv4 cục bộ hiệu năng cao dựa trên tìm kiếm nhị phân trong tệp ánh xạ bộ nhớ, với tính năng tự động cập nhật cơ sở dữ liệu IP."
 "CSV file not found.": "Không tìm thấy tệp CSV."
 "No valid records in the CSV file.": "Không có bản ghi hợp lệ trong tệp CSV."
 "Unable to find the IP database {0}": "Không thể tìm thấy cơ sở dữ liệu IP {0}"

@@ -1,4 +1,6 @@
 # فارسی 词表（fa）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"NewLife.IP - IPv4 Geolocation Library": "NewLife.IP - کتابخانه مکان‌یابی IPv4"
+"High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates.": "کتابخانه جستجوی محلی مکان‌یابی IPv4 با کارایی بالا بر پایه جستجوی دودویی در فایل‌های نگاشت‌شده در حافظه، با به‌روزرسانی خودکار پایگاه داده IP."
 "CSV file not found.": "فایل CSV پیدا نشد."
 "No valid records in the CSV file.": "هیچ رکورد معتبری در فایل CSV وجود ندارد."
 "Unable to find the IP database {0}": "پایگاه داده IP {0} پیدا نشد"

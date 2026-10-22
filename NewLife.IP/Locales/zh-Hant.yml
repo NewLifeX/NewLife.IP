@@ -1,4 +1,6 @@
 # 繁體中文譯文。鍵為英文源文，缺失時執行期回退英文。
+"NewLife.IP - IPv4 Geolocation Library": "NewLife.IP - IPv4 歸屬地解析庫"
+"High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates.": "高效能本機 IPv4 歸屬地查詢庫，基於記憶體映射檔案二分檢索，並支援 IP 資料庫自動更新。"
 "CSV file not found.": "找不到CSV文件"
 "No valid records in the CSV file.": "CSV中沒有有效記錄"
 "Unable to find the IP database {0}": "無法找到IP數據庫{0}"

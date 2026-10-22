@@ -1,4 +1,6 @@
 # Norsk bokmål 词表（nb）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"NewLife.IP - IPv4 Geolocation Library": "NewLife.IP - IPv4-geolokaliseringsbibliotek"
+"High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates.": "Høytytende lokalt IPv4-geolokaliseringsbibliotek basert på binærsøk i minnetilordnede filer, med automatisk oppdatering av IP-databasen."
 "CSV file not found.": "Fant ikke CSV-filen."
 "No valid records in the CSV file.": "Det er ingen gyldige poster i CSV-filen."
 "Unable to find the IP database {0}": "Finner ikke IP-databasen {0}"

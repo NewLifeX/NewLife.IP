@@ -1,4 +1,6 @@
 # Bahasa Indonesia 词表（id）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"NewLife.IP - IPv4 Geolocation Library": "NewLife.IP - Pustaka geolokasi IPv4"
+"High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates.": "Pustaka pencarian geolokasi IPv4 lokal berperforma tinggi berbasis pencarian biner pada file yang dipetakan ke memori, dengan pembaruan basis data IP otomatis."
 "CSV file not found.": "File CSV tidak ditemukan."
 "No valid records in the CSV file.": "Tidak ada catatan valid dalam file CSV."
 "Unable to find the IP database {0}": "Tidak dapat menemukan basis data IP {0}"

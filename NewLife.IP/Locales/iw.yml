@@ -1,4 +1,6 @@
 # עברית 词表（旧式区域名 iw 别名，内容同 he）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"NewLife.IP - IPv4 Geolocation Library": "NewLife.IP - ספריית איתור מיקום IPv4"
+"High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates.": "ספריית איתור מיקום IPv4 מקומית בעלת ביצועים גבוהים המבוססת על חיפוש בינארי בקבצים ממופים בזיכרון, עם עדכון אוטומטי של מסד נתוני IP."
 "CSV file not found.": "קובץ CSV לא נמצא."
 "No valid records in the CSV file.": "אין רשומות תקפות בקובץ ה-CSV."
 "Unable to find the IP database {0}": "לא ניתן למצוא את מסד הנתונים IP {0}"

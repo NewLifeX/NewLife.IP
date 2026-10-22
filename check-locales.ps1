@@ -135,7 +135,8 @@ if (!$SkipOrphan) {
         if ([IO.Path]::IsPathRooted($_)) { $_ } else { Join-Path $root $_ }
     } | Where-Object { Test-Path $_ })
 
-    $sourceText = ($sourceDirs | ForEach-Object { Get-ChildItem $_ -Recurse -Filter *.cs } |
+    # 源文范围含 .cs 与 .csproj：程序集标题/描述等元数据写在 csproj 中，同样是词表源文
+    $sourceText = ($sourceDirs | ForEach-Object { Get-ChildItem $_ -Recurse -Include *.cs, *.csproj } |
         Where-Object { $_.FullName -notmatch '\\(obj|bin|Locales)\\' } |
         ForEach-Object { [IO.File]::ReadAllText($_.FullName) }) -join "`n"
 

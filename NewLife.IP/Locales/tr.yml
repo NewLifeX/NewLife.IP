@@ -1,4 +1,6 @@
 # Türkçe 词表（tr）。键为英文源文，与源码字符串逐字一致；缺少的键运行时回退英文。
+"NewLife.IP - IPv4 Geolocation Library": "NewLife.IP - IPv4 konum kitaplığı"
+"High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates.": "Bellek eşlemeli dosyalarda ikili arama tabanlı, otomatik IP veritabanı güncellemeli yüksek performanslı yerel IPv4 konum arama kitaplığı."
 "CSV file not found.": "CSV dosyası bulunamadı."
 "No valid records in the CSV file.": "CSV dosyasında geçerli kayıt yok."
 "Unable to find the IP database {0}": "IP veritabanı {0} bulunamadı"
