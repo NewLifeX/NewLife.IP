@@ -13,7 +13,8 @@ jobs:
   # continue-on-error：AOT 兼容问题不阻塞主分支合并。
   aot-analyzer:
     name: aot analyzer check
-    runs-on: windows-latest
+    # 分析器与 RID 无关，优先用 Ubuntu（更省成本）；NativeAOT 矩阵仍按 RID 用原生 runner
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     continue-on-error: true
 
@@ -25,9 +26,9 @@ jobs:
         dotnet-version: 10.x
     - name: AOT Analyzer Check
       run: |
-        dotnet build NewLife.IP\NewLife.IP.csproj -f net8.0 -c Release -warnaserror
-        dotnet build NewLife.IP\NewLife.IP.csproj -f net9.0 -c Release -warnaserror
-        dotnet build NewLife.IP\NewLife.IP.csproj -f net10.0 -c Release -warnaserror
+        dotnet build NewLife.IP/NewLife.IP.csproj -f net8.0 -c Release -warnaserror
+        dotnet build NewLife.IP/NewLife.IP.csproj -f net9.0 -c Release -warnaserror
+        dotnet build NewLife.IP/NewLife.IP.csproj -f net10.0 -c Release -warnaserror
 
   # NativeAOT 冒烟矩阵（非阻塞观察项）：NativeAOT 官方不支持跨 OS 编译，每个 RID 用原生 runner 发布运行（AotSmoke 21 场景）。
   # win-x64 / linux-x64 / linux-arm64 全覆盖；linux-la64 见文件末尾 job。任何失败仅记录、不阻塞主分支。
