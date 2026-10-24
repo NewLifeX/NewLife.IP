@@ -5,7 +5,7 @@
     <Description>High-performance local IPv4 geolocation lookup library based on memory-mapped binary search, with automatic IP database updates.</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 新生命开发团队</Copyright>
-    <VersionPrefix>2.5</VersionPrefix>
+    <VersionPrefix>2.6</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -35,7 +35,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.IP</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName);在线IP;IP定位</PackageTags>
-    <PackageReleaseNotes>新增在线 IP 对接，支持离线/在线双数据源切换，默认 ip-api.com 免费接口；支持腾讯/高德/百度国内厂商对接，响应多格式自动解析；新增 DB-IP CSV 转纯真格式转换器；在线查询内置缓存与容错；修复 IpDatabase 普通记录地址解析与视图释放缺陷</PackageReleaseNotes>
+    <PackageReleaseNotes>接入 NewLife.Core 12 运行时多语言，31 种语言词表覆盖日志与异常文本；Ip/IpDatabase/IpCsv/OnlineIp 统一接入 ILog 前缀并按日志语言翻译；新增 Android/iOS 移动端冒烟与 NativeAOT 21 场景冒烟；单元测试迁移 xUnit v3 并覆盖 win-x64/linux-x64/linux-arm64/龙芯 LA64；升级 NewLife.Core 到 12.0.2026.1024；修复索引区间外查询死循环与 Linux 尾部记录越界异常</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -51,7 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="12.0.2026.1019-beta1413" />
+    <PackageReference Include="NewLife.Core" Version="12.0.2026.1024" />
   </ItemGroup>
 
   <ItemGroup>
