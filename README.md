@@ -217,6 +217,12 @@ CI (triggered on push/PR) runs the full unit test suite on four RIDs: win-x64 / 
 - Multiple TFMs included, with API kept backward compatible; breaking changes are marked `[Obsolete]` first
 - Release Notes (NuGet / GitHub) highlight: performance / compatibility / security fixes
 
+### Release
+Push a `v`-prefixed tag (for example `v2.6.2026.1024`) to trigger `.github/workflows/publish.yml`. The workflow packs
+the package, publishes it to both **NuGet.org** and **GitHub Packages**, and creates a **GitHub Release** whose notes are
+taken from the matching `ChangeLog.md` section (assets: nupkg + snupkg). The package version is taken from the tag, and a
+tag that does not match `VersionPrefix` fails the build. A manual run only publishes packages and creates no Release.
+
 ---
 ## Contributing
 Welcome:
@@ -291,7 +297,7 @@ NewLife is a layered ecosystem of independently versioned open-source projects. 
 | [GitCandy](https://github.com/NewLifeX/GitCandy) | Self-hosted Git source code management system. | — |
 | [LuckyClover](https://github.com/NewLifeX/LuckyClover) | Installs the matching .NET runtime automatically when launched from an older host. | — |
 
-> Badges show the primary package of each project; theme, extension and satellite packages are listed on their NuGet pages.The 30+ packages not listed here (FTP, LoRa, Office extensions, protocol drivers and more) are available under the [NewLifeX organization](https://github.com/NewLifeX) and on [newlifex.com](https://newlifex.com).
+> Badges show the primary package of each project; theme, extension and satellite packages are listed on their NuGet pages. The 30+ packages not listed here (FTP, LoRa, Office extensions, protocol drivers and more) are available under the [NewLifeX organization](https://github.com/NewLifeX) and on [newlifex.com](https://newlifex.com).
 
 ## Team
 

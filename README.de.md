@@ -41,6 +41,10 @@ var area = ip.GetArea();
 
 > 📖 Vollständige Dokumentation (Chinesisch): [Repository-Dokumente](Doc)
 
+## Veröffentlichung
+
+Ein Tag mit Präfix `v` (zum Beispiel `v2.6.2026.1024`) löst `.github/workflows/publish.yml` aus. Der Workflow packt das Paket, veröffentlicht es gleichzeitig auf NuGet.org und GitHub Packages und erstellt ein GitHub Release, dessen Hinweise aus dem passenden Abschnitt von `ChangeLog.md` stammen (Artefakte umfassen nupkg und snupkg). Ein manueller Lauf veröffentlicht nur Pakete und erstellt kein Release.
+
 ## Ökosystem-Karte
 
 NewLife ist ein geschichtetes Ökosystem unabhängig versionierter Open-Source-Projekte. Die folgende Karte wird wortgleich in allen NewLife-Repositories verwendet; jedes Projekt verlinkt auf sein Repository und sein primäres NuGet-Paket.
@@ -89,7 +93,7 @@ NewLife ist ein geschichtetes Ökosystem unabhängig versionierter Open-Source-P
 | [GitCandy](https://github.com/NewLifeX/GitCandy) | Selbst gehostetes Git-Quellcode-Verwaltungssystem. | — |
 | [LuckyClover](https://github.com/NewLifeX/LuckyClover) | Installiert automatisch die passende .NET-Laufzeit, wenn es von einem älteren Host gestartet wird. | — |
 
-> Die Badges zeigen das primäre Paket jedes Projekts; Theme-, Erweiterungs- und Satellitenpakete sind auf den jeweiligen NuGet-Seiten aufgeführt.Die hier nicht aufgeführten über 30 Pakete (FTP, LoRa, Office-Erweiterungen, Protokolltreiber und mehr) sind in der [NewLifeX-Organisation](https://github.com/NewLifeX) und auf [newlifex.com](https://newlifex.com) verfügbar.
+> Die Badges zeigen das primäre Paket jedes Projekts; Theme-, Erweiterungs- und Satellitenpakete sind auf den jeweiligen NuGet-Seiten aufgeführt. Die hier nicht aufgeführten über 30 Pakete (FTP, LoRa, Office-Erweiterungen, Protokolltreiber und mehr) sind in der [NewLifeX-Organisation](https://github.com/NewLifeX) und auf [newlifex.com](https://newlifex.com) verfügbar.
 
 ## Team
 

@@ -41,6 +41,10 @@ var area = ip.GetArea();
 
 > 📖 전체 문서(중국어): [저장소 문서](Doc)
 
+## 릴리스
+
+`v` 접두사 태그(예: `v2.6.2026.1024`)를 푸시하면 `.github/workflows/publish.yml`이 실행됩니다. 워크플로는 패키지를 만들어 NuGet.org와 GitHub Packages에 동시에 게시하고, `ChangeLog.md`의 해당 섹션에서 노트를 가져온 GitHub Release를 생성합니다(자산에는 nupkg와 snupkg가 포함됩니다). 수동 실행은 패키지만 게시하며 Release는 만들지 않습니다.
+
 ## 생태계 지도
 
 NewLife는 독립적으로 버전이 관리되는 오픈소스 프로젝트의 계층형 생태계입니다. 아래 지도는 모든 NewLife 리포지토리에서 그대로 동일하게 공유되며, 각 프로젝트는 코드 리포지토리와 기본 NuGet 패키지로 연결됩니다.
@@ -89,7 +93,7 @@ NewLife는 독립적으로 버전이 관리되는 오픈소스 프로젝트의 �
 | [GitCandy](https://github.com/NewLifeX/GitCandy) | 셀프 호스팅 Git 소스 코드 관리 시스템. | — |
 | [LuckyClover](https://github.com/NewLifeX/LuckyClover) | 구버전 호스트에서 시작할 때 일치하는 .NET 런타임을 자동으로 설치합니다. | — |
 
-> 배지는 각 프로젝트의 기본 패키지를 나타냅니다. 테마, 확장, 위성 패키지는 해당 NuGet 페이지에서 확인하세요.여기에 나열하지 않은 30여 개 패키지(FTP, LoRa, Office 확장, 각종 프로토콜 드라이버 등)는 [NewLifeX 조직](https://github.com/NewLifeX)과 [newlifex.com](https://newlifex.com)에서 확인할 수 있습니다.
+> 배지는 각 프로젝트의 기본 패키지를 나타냅니다. 테마, 확장, 위성 패키지는 해당 NuGet 페이지에서 확인하세요. 여기에 나열하지 않은 30여 개 패키지(FTP, LoRa, Office 확장, 각종 프로토콜 드라이버 등)는 [NewLifeX 조직](https://github.com/NewLifeX)과 [newlifex.com](https://newlifex.com)에서 확인할 수 있습니다.
 
 ## 뉴라이프 개발팀
 

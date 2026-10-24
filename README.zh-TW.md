@@ -41,6 +41,10 @@ var area = ip.GetArea();
 
 > 📖 完整文件（中文）見 [儲存庫文件](Doc)
 
+## 發行
+
+推送 `v` 前綴標籤（例如 `v2.6.2026.1024`）觸發 `.github/workflows/publish.yml`。工作流程完成封裝後同時發佈到 NuGet.org 與 GitHub Packages，並建立 GitHub Release（說明取自 `ChangeLog.md` 對應段落，資產含 nupkg/snupkg）；手動觸發工作流程只發佈套件，不建立 Release。
+
 ## 生態版圖
 
 NewLife 生態系按相依分層，各專案獨立版本、獨立發行。下面的版圖在所有 NewLife 儲存庫中逐字一致；每個專案連結到程式碼儲存庫與主 NuGet 套件。

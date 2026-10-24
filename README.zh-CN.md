@@ -219,6 +219,9 @@ CI（push/PR 触发）在 win-x64 / linux-x64 / linux-arm64 / linux-la64（龙�
 - 包含多 TFM，保持 API 向后兼容；破坏性变更会先标记 `[Obsolete]`
 - Release Notes（NuGet / GitHub）突出：性能 / 兼容 / 安全修复
 
+### 发版
+推送 `v` 前缀 tag（如 `v2.6.2026.1024`）触发 `.github/workflows/publish.yml`。工作流完成打包后同时发布到 NuGet.org 与 GitHub Packages，并创建 GitHub Release（说明取自 `ChangeLog.md` 对应段落，资产含 nupkg/snupkg）；包版本严格取自 tag，tag 与 `VersionPrefix` 不一致会直接失败；手工触发工作流只发包，不创建 Release。
+
 ---
 ## 贡献 (Contributing)
 欢迎：
